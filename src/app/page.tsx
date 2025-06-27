@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Card,
   CardContent,
@@ -21,11 +23,6 @@ import {
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { Badge } from "@/components/ui/badge"
 import { studentData } from "@/lib/data"
-import { Metadata } from "next"
-
-export const metadata: Metadata = {
-  title: 'Dashboard',
-};
 
 export default function Dashboard() {
   const { summary, schedule, performance } = studentData;
