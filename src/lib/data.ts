@@ -71,32 +71,48 @@ export const testResultsData = [
     { id: 5, subject: 'Marathi', testName: 'Unit Test 1', date: format(subDays(today, 8), 'dd MMM, yyyy'), score: 95 },
 ];
 
-
-const monthlyFees = [
-    { month: 'August 2024', invoiceId: 'INV-2024004', total: 5000, paid: 0, status: 'Due', dueDate: '31 Aug, 2024' },
-    { month: 'July 2024', invoiceId: 'INV-2024003', total: 25000, paid: 25000, status: 'Paid', dueDate: '30 Jul, 2024' },
-    { month: 'June 2024', invoiceId: 'INV-2024002', total: 20000, paid: 20000, status: 'Paid', dueDate: '15 Jun, 2024' },
-    { month: 'May 2024', invoiceId: null, total: 0, paid: 0, status: 'No Dues', dueDate: null },
-    { month: 'April 2024', invoiceId: 'INV-2024001', total: 25000, paid: 25000, status: 'Paid', dueDate: '15 Apr, 2024' },
-];
-
-const feeSummary = monthlyFees.reduce((acc, fee) => {
-    acc.total += fee.total;
-    acc.paid += fee.paid;
-    return acc;
-}, { total: 0, paid: 0 });
-
-const dueAmount = feeSummary.total - feeSummary.paid;
-const nextDueItem = monthlyFees.find(f => f.status === 'Due');
-
-export const feeData = {
+export const studentFeeData = {
   summary: {
-    total: feeSummary.total,
-    paid: feeSummary.paid,
-    due: dueAmount,
-    dueDate: nextDueItem ? nextDueItem.dueDate : 'N/A',
+    total: 75000,
+    paid: 50000,
+    due: 25000,
+    dueDate: '31 Aug, 2024',
   },
-  monthlyBreakdown: monthlyFees,
+  monthlyBreakdown: [
+    { month: 'August 2024', invoiceId: 'INV-2024004', total: 25000, paid: 0, status: 'Due', dueDate: '31 Aug, 2024' },
+    { month: 'July 2024', invoiceId: 'INV-2024003', total: 25000, paid: 25000, status: 'Paid', dueDate: '30 Jul, 2024' },
+    { month: 'June 2024', invoiceId: 'INV-2024002', total: 25000, paid: 25000, status: 'Paid', dueDate: '15 Jun, 2024' },
+  ],
+};
+
+export const allStudentsFeeData = {
+  'STU-001': {
+    name: 'Rohan Sharma',
+    summary: { total: 75000, paid: 50000, due: 25000, dueDate: '31 Aug, 2024' },
+    monthlyBreakdown: [
+      { month: 'August 2024', total: 25000, paid: 0, status: 'Due' },
+      { month: 'July 2024', total: 25000, paid: 25000, status: 'Paid' },
+      { month: 'June 2024', total: 25000, paid: 25000, status: 'Paid' },
+    ],
+  },
+  'STU-002': {
+    name: 'Priya Singh',
+    summary: { total: 75000, paid: 75000, due: 0, dueDate: 'N/A' },
+    monthlyBreakdown: [
+      { month: 'August 2024', total: 25000, paid: 25000, status: 'Paid' },
+      { month: 'July 2024', total: 25000, paid: 25000, status: 'Paid' },
+      { month: 'June 2024', total: 25000, paid: 25000, status: 'Paid' },
+    ],
+  },
+  'STU-003': {
+    name: 'Amit Patel',
+    summary: { total: 75000, paid: 25000, due: 50000, dueDate: '31 Jul, 2024' },
+    monthlyBreakdown: [
+      { month: 'August 2024', total: 25000, paid: 0, status: 'Due' },
+      { month: 'July 2024', total: 25000, paid: 0, status: 'Due' },
+      { month: 'June 2024', total: 25000, paid: 25000, status: 'Paid' },
+    ],
+  },
 };
 
 export const usersData = {

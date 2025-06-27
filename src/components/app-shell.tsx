@@ -55,7 +55,7 @@ const studentNavItems = [
     { href: '/student-dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/attendance', label: 'Attendance', icon: CalendarCheck },
     { href: '/documents', label: 'Documents', icon: FileText },
-    { href: '/fees', label: 'Fee Management', icon: CreditCard },
+    { href: '/my-fees', label: 'My Fees', icon: CreditCard },
 ];
 
 function AppHeader() {
@@ -136,7 +136,7 @@ function AppHeader() {
 
 function MainSidebar() {
     const pathname = usePathname();
-    const isStudentRoute = pathname.startsWith('/student-dashboard');
+    const isStudentRoute = pathname.startsWith('/student-dashboard') || pathname.startsWith('/my-fees');
     const currentNavItems = isStudentRoute ? studentNavItems : navItems;
     const homeUrl = isStudentRoute ? '/student-dashboard' : '/dashboard';
 
