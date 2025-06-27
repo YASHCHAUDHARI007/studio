@@ -27,10 +27,16 @@ export default function LoginPage() {
       const student = usersData.students.find(
         (s) => s.username === username && s.password === password
       )
+      const teacher = usersData.teachers.find(
+        (t) => t.username === username && t.password === password
+      )
 
       if (student) {
         toast({ title: 'Login Successful', description: `Welcome back, ${student.name}!` })
         router.push('/student-dashboard')
+      } else if (teacher) {
+        toast({ title: 'Login Successful', description: `Welcome back, ${teacher.name}!` })
+        router.push('/dashboard')
       } else if (username === 'admin' && password === 'admin') {
         // Mock admin/teacher login
         toast({ title: 'Login Successful', description: 'Welcome back, Admin!' })

@@ -94,8 +94,8 @@ export const usersData = {
     { id: 'STU-003', name: 'Amit Patel', grade: '9th', parentName: 'Mr. Patel', parentContact: '9876543212', email: 'amit.patel@example.com', dateOfBirth: '2008-09-01', username: '9876543212', password: 'amit01092008' },
   ],
   teachers: [
-    { id: 'TCH-001', name: 'Mrs. Davis', subject: 'Mathematics', email: 'mrs.davis@example.com' },
-    { id: 'TCH-002', name: 'Mr. Khan', subject: 'Science', email: 'mr.khan@example.com' },
-    { id: 'TCH-003', name: 'Ms. Joshi', subject: 'English', email: 'ms.joshi@example.com' },
+    { id: 'TCH-001', name: 'Mrs. Davis', subject: 'Mathematics', email: 'davis@example.com', username: 'davis@example.com', password: 'password123' },
+    { id: 'TCH-002', name: 'Mr. Khan', subject: 'Science', email: 'khan@example.com', username: 'khan@example.com', password: 'password123' },
+    { id: 'TCH-003', name: 'Ms. Joshi', subject: 'English', email: 'joshi@example.com', username: 'joshi@example.com', password: 'password123' },
   ]
 };
