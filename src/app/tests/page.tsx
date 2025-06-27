@@ -196,6 +196,20 @@ export default function TestsPage() {
     classAverage = (totalScore / resultsForSelectedTest.length / selectedTestForResults.totalMarks) * 100;
   }
 
+  const formatTime12Hour = (timeString: string) => {
+    if (!timeString) {
+      return '';
+    }
+    const [hours, minutes] = timeString.split(':');
+    let h = parseInt(hours, 10);
+    const m = parseInt(minutes, 10);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12;
+    h = h ? h : 12; // the hour '0' should be '12'
+    const minuteString = m < 10 ? '0' + m : String(m);
+    return `${h}:${minuteString} ${ampm}`;
+  };
+
   return (
     <>
       <Tabs defaultValue="schedule" className="w-full">
@@ -322,7 +336,7 @@ export default function TestsPage() {
                       <TableCell className="font-medium">{test.testName}</TableCell>
                       <TableCell>{test.subject}</TableCell>
                       <TableCell>{test.grade}</TableCell>
-                      <TableCell>{format(new Date(test.date), 'dd MMM, yyyy')} @ {test.time}</TableCell>
+                      <TableCell>{format(new Date(test.date), 'dd MMM, yyyy')} @ {formatTime12Hour(test.time)}</TableCell>
                       <TableCell>{test.totalMarks}</TableCell>
                       <TableCell>
                         <Badge variant={test.status === 'Completed' ? 'secondary' : 'default'}>{test.status}</Badge>
