@@ -75,7 +75,7 @@ function AppHeader() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('userType');
+    localStorage.removeItem('user');
     router.push('/login');
   };
 
@@ -140,9 +140,11 @@ function MainSidebar() {
     const [userType, setUserType] = React.useState<string | null>(null);
 
     React.useEffect(() => {
-        // This runs on the client and will re-run if the pathname changes.
-        const storedUserType = localStorage.getItem('userType');
-        setUserType(storedUserType);
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            const userData = JSON.parse(storedUser);
+            setUserType(userData.type);
+        }
     }, [pathname]);
 
     // Choose nav items based on user type

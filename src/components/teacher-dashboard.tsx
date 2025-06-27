@@ -15,89 +15,85 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart"
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
-import { Badge } from "@/components/ui/badge"
-import { studentData } from "@/lib/data"
+import { usersData } from "@/lib/data"
+import { Users, BookOpen, FileText } from "lucide-react"
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 export function TeacherDashboard() {
-  const { summary, schedule, performance } = studentData;
+  // For a real app, you'd filter students assigned to this specific teacher
+  const assignedStudents = usersData.students;
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      <Card className="lg:col-span-3">
+    <div className="space-y-6">
+      <Card>
         <CardHeader>
-          <CardTitle>Student Overview</CardTitle>
+          <CardTitle>Teacher Dashboard</CardTitle>
           <CardDescription>
-            A detailed look at {summary.studentName}'s academic profile.
+            Welcome! Here's an overview of your students and classes.
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-6 md:grid-cols-3">
-          <div className="flex flex-col space-y-1 rounded-lg border p-4">
-            <h3 className="text-sm font-medium text-muted-foreground">Overall Grade</h3>
-            <p className="text-3xl font-bold">{summary.overallGrade}</p>
-          </div>
-          <div className="flex flex-col space-y-1 rounded-lg border p-4">
-            <h3 className="text-sm font-medium text-muted-foreground">Attendance</h3>
-            <p className="text-3xl font-bold">{summary.attendance}</p>
-          </div>
-          <div className="flex flex-col space-y-1 rounded-lg border p-4">
-            <h3 className="text-sm font-medium text-muted-foreground">Upcoming Assignments</h3>
-            <p className="text-3xl font-bold">{summary.upcomingAssignments}</p>
-          </div>
-        </CardContent>
       </Card>
-
-      <Card className="lg:col-span-2">
-        <CardHeader>
-          <CardTitle>Academic Performance</CardTitle>
-          <CardDescription>Scores from recent tests and assignments.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={{}} className="h-64 w-full">
-            <BarChart data={performance}>
-              <CartesianGrid vertical={false} />
-              <XAxis
-                dataKey="subject"
-                tickLine={false}
-                tickMargin={10}
-                axisLine={false}
-              />
-              <YAxis />
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent indicator="dot" />}
-              />
-              <Bar dataKey="score" fill="var(--color-primary)" radius={4} />
-            </BarChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
+      
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Assigned Students</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{assignedStudents.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Classes Taught</CardTitle>
+            <BookOpen className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {/* Hardcoded for now */}
+            <div className="text-2xl font-bold">3</div>
+            <p className="text-xs text-muted-foreground">Grades 9 & 10</p>
+          </CardContent>
+        </Card>
+         <Card>
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>Manage results and materials.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
+            <Button asChild className="w-full">
+              <Link href="/documents">
+                <FileText className="mr-2 h-4 w-4"/>
+                Manage Documents
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Today's Schedule</CardTitle>
-          <CardDescription>Classes and activities for today.</CardDescription>
+          <CardTitle>My Students</CardTitle>
+          <CardDescription>A list of students assigned to you.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Time</TableHead>
-                <TableHead>Subject</TableHead>
+                <TableHead>ID</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Grade</TableHead>
+                <TableHead>Parent's Name</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {schedule.map((item) => (
-                <TableRow key={item.time}>
-                  <TableCell className="font-medium">{item.time}</TableCell>
-                  <TableCell>
-                    <Badge variant={item.type === 'class' ? 'default' : 'secondary'}>{item.subject}</Badge>
-                  </TableCell>
+              {assignedStudents.map((student) => (
+                <TableRow key={student.id}>
+                  <TableCell className="font-mono text-xs text-muted-foreground">{student.id}</TableCell>
+                  <TableCell className="font-medium">{student.name}</TableCell>
+                  <TableCell>{student.grade}</TableCell>
+                  <TableCell>{student.parentName}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

@@ -10,8 +10,11 @@ export default function DashboardPage() {
 
   React.useEffect(() => {
     // Client-side only check
-    const storedUserType = localStorage.getItem('userType');
-    setUserType(storedUserType);
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const userData = JSON.parse(storedUser)
+      setUserType(userData.type);
+    }
   }, []);
 
   if (!userType) {

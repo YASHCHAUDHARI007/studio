@@ -24,8 +24,8 @@ export default function LoginPage() {
     e.preventDefault()
     setIsLoading(true)
     
-    // Clear previous user type
-    localStorage.removeItem('userType');
+    // Clear previous user
+    localStorage.removeItem('user');
 
     // Mock authentication
     setTimeout(() => {
@@ -38,15 +38,15 @@ export default function LoginPage() {
 
       if (username === 'superadmin' && password === 'superpassword') {
         toast({ title: 'Login Successful', description: 'Welcome, Super Admin!' })
-        localStorage.setItem('userType', 'superadmin');
+        localStorage.setItem('user', JSON.stringify({ type: 'superadmin', name: 'Super Admin' }));
         router.push('/dashboard')
       } else if (student) {
         toast({ title: 'Login Successful', description: `Welcome back, ${student.name}!` })
-        localStorage.setItem('userType', 'student');
+        localStorage.setItem('user', JSON.stringify({ type: 'student', id: student.id, name: student.name }));
         router.push('/student-dashboard')
       } else if (teacher) {
         toast({ title: 'Login Successful', description: `Welcome back, ${teacher.name}!` })
-        localStorage.setItem('userType', 'teacher');
+        localStorage.setItem('user', JSON.stringify({ type: 'teacher', id: teacher.id, name: teacher.name }));
         router.push('/dashboard')
       } else {
         toast({

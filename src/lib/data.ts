@@ -67,11 +67,14 @@ export const initialDocumentsData = [
 ];
 
 export const initialTestResultsData = [
-    { id: 1, subject: 'Mathematics', testName: 'Unit Test 1', date: format(subDays(today, 7), 'dd MMM, yyyy'), score: 85 },
-    { id: 2, subject: 'Science', testName: 'Mid-term Exam', date: format(subDays(today, 14), 'dd MMM, yyyy'), score: 92 },
-    { id: 3, subject: 'English', testName: 'Essay Submission', date: format(subDays(today, 4), 'dd MMM, yyyy'), score: 88 },
-    { id: 4, subject: 'History', testName: 'Quiz 3', date: format(subDays(today, 10), 'dd MMM, yyyy'), score: 78 },
-    { id: 5, subject: 'Marathi', testName: 'Unit Test 1', date: format(subDays(today, 8), 'dd MMM, yyyy'), score: 95 },
+    { id: 8, studentId: 'STU-001', studentName: 'Rohan Sharma', subject: 'English', testName: 'Essay Submission', date: format(subDays(today, 4), 'dd MMM, yyyy'), score: 88 },
+    { id: 7, studentId: 'STU-002', studentName: 'Priya Singh', subject: 'English', testName: 'Essay Submission', date: format(subDays(today, 4), 'dd MMM, yyyy'), score: 94 },
+    { id: 6, studentId: 'STU-003', studentName: 'Amit Patel', subject: 'Marathi', testName: 'Unit Test 1', date: format(subDays(today, 8), 'dd MMM, yyyy'), score: 80 },
+    { id: 5, studentId: 'STU-001', studentName: 'Rohan Sharma', subject: 'Mathematics', testName: 'Unit Test 1', date: format(subDays(today, 7), 'dd MMM, yyyy'), score: 85 },
+    { id: 4, studentId: 'STU-002', studentName: 'Priya Singh', subject: 'Mathematics', testName: 'Unit Test 1', date: format(subDays(today, 7), 'dd MMM, yyyy'), score: 91 },
+    { id: 3, studentId: 'STU-003', studentName: 'Amit Patel', subject: 'Mathematics', testName: 'Unit Test 1', date: format(subDays(today, 7), 'dd MMM, yyyy'), score: 76 },
+    { id: 2, studentId: 'STU-001', studentName: 'Rohan Sharma', subject: 'Science', testName: 'Mid-term Exam', date: format(subDays(today, 14), 'dd MMM, yyyy'), score: 92 },
+    { id: 1, studentId: 'STU-002', studentName: 'Priya Singh', subject: 'Science', testName: 'Mid-term Exam', date: format(subDays(today, 14), 'dd MMM, yyyy'), score: 88 },
 ];
 
 export const initialStudentFeeData = {
