@@ -75,7 +75,7 @@ type Test = z.infer<typeof scheduleTestSchema> & { id: string; status: 'Upcoming
 
 export default function TestsPage() {
   const { toast } = useToast()
-  const [currentUser, setCurrentUser] = React.useState<{type: string; id?: string; name?: string;} | null>(null);
+  const [currentUser, setCurrentUser] = React.useState<{type: string; id?: string; name?: string; grade?: string; medium?: string;} | null>(null);
   const [tests, setTests] = React.useState(initialTestsData)
   const [testResults, setTestResults] = React.useState(initialTestResultsData)
   const [isScheduleTestOpen, setIsScheduleTestOpen] = React.useState(false)
@@ -99,8 +99,17 @@ export default function TestsPage() {
   React.useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      const userData = JSON.parse(storedUser);
-       setCurrentUser(userData);
+        const userData = JSON.parse(storedUser);
+        if (userData.type === 'student') {
+            const studentDetails = usersData.students.find(s => s.id === userData.id);
+            if (studentDetails) {
+                setCurrentUser({ ...userData, grade: studentDetails.grade, medium: studentDetails.medium });
+            } else {
+                setCurrentUser(userData);
+            }
+        } else {
+            setCurrentUser(userData);
+        }
     }
   }, []);
 
@@ -131,7 +140,6 @@ export default function TestsPage() {
       return;
     }
     
-    // Add validation to the schema based on total marks
     enterMarksForm.control.register('marks', {
         validate: (value) => {
             if (value.some((v: any) => v.score > test.totalMarks)) {
@@ -153,8 +161,7 @@ export default function TestsPage() {
   function onEnterMarks(data: z.infer<typeof enterMarksSchema>) {
     if (!selectedTestForMarks) return;
 
-    // Check for scores exceeding total marks
-     const invalidScores = data.marks.filter(mark => mark.score !== undefined && mark.score > selectedTestForMarks.totalMarks);
+    const invalidScores = data.marks.filter(mark => mark.score !== undefined && mark.score > selectedTestForMarks.totalMarks);
     if (invalidScores.length > 0) {
         toast({
             variant: "destructive",
@@ -174,7 +181,6 @@ export default function TestsPage() {
         score: mark.score!,
       }));
     
-    // Filter out old results for this test and add new ones
     const otherResults = testResults.filter(r => r.testId !== selectedTestForMarks.id);
     setTestResults([...otherResults, ...newResults]);
     
@@ -183,17 +189,39 @@ export default function TestsPage() {
     setSelectedTestForMarks(null);
     enterMarksForm.reset();
   }
+
+  const testsToDisplay = React.useMemo(() => {
+    if (userType === 'student' && currentUser?.grade && currentUser?.medium) {
+      return tests.filter(test => test.grade === currentUser.grade && test.medium === currentUser.medium);
+    }
+    return tests;
+  }, [tests, userType, currentUser]);
+
+  const completedTests = React.useMemo(() => {
+    const allCompleted = tests.filter(t => t.status === 'Completed');
+     if (userType === 'student' && currentUser?.grade && currentUser?.medium) {
+        return allCompleted.filter(test => test.grade === currentUser.grade && test.medium === currentUser.medium);
+     }
+     return allCompleted;
+  }, [tests, userType, currentUser]);
   
-  const completedTests = tests.filter(t => t.status === 'Completed');
   const [selectedResultTestId, setSelectedResultTestId] = React.useState<string | undefined>(completedTests[0]?.id);
   
   const selectedTestForResults = tests.find(t => t.id === selectedResultTestId);
-  const resultsForSelectedTest = testResults.filter(r => r.testId === selectedResultTestId);
+
+  const resultsForSelectedTest = React.useMemo(() => {
+    const results = testResults.filter(r => r.testId === selectedResultTestId);
+    if (userType === 'student') {
+        return results.filter(r => r.studentId === currentUser?.id);
+    }
+    return results;
+  }, [testResults, selectedResultTestId, userType, currentUser]);
   
   let classAverage = 0;
   if (selectedTestForResults && resultsForSelectedTest.length > 0) {
-    const totalScore = resultsForSelectedTest.reduce((sum, r) => sum + r.score, 0);
-    classAverage = (totalScore / resultsForSelectedTest.length / selectedTestForResults.totalMarks) * 100;
+    const totalScore = testResults.filter(r => r.testId === selectedResultTestId).reduce((sum, r) => sum + r.score, 0);
+    const totalStudentsInTest = testResults.filter(r => r.testId === selectedResultTestId).length;
+    classAverage = (totalScore / totalStudentsInTest / selectedTestForResults.totalMarks) * 100;
   }
 
   const formatTime12Hour = (timeString: string) => {
@@ -205,7 +233,7 @@ export default function TestsPage() {
     const m = parseInt(minutes, 10);
     const ampm = h >= 12 ? 'PM' : 'AM';
     h = h % 12;
-    h = h ? h : 12; // the hour '0' should be '12'
+    h = h ? h : 12;
     const minuteString = m < 10 ? '0' + m : String(m);
     return `${h}:${minuteString} ${ampm}`;
   };
@@ -331,7 +359,7 @@ export default function TestsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {tests.map((test) => (
+                  {testsToDisplay.map((test) => (
                     <TableRow key={test.id}>
                       <TableCell className="font-medium">{test.testName}</TableCell>
                       <TableCell>{test.subject}</TableCell>
@@ -379,7 +407,7 @@ export default function TestsPage() {
                             ))}
                         </SelectContent>
                     </Select>
-                    {selectedTestForResults && (
+                    {selectedTestForResults && isTeacherOrAdmin && (
                         <div className="flex items-center gap-4 rounded-lg border p-3">
                              <div className="text-center">
                                 <p className="text-sm text-muted-foreground">Class Average</p>

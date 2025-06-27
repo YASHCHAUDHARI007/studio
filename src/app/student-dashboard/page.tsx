@@ -28,7 +28,7 @@ import { format } from "date-fns"
 
 export default function StudentDashboard() {
   const { summary, schedule, performance } = studentData;
-  const [currentUser, setCurrentUser] = React.useState<{type: string, id: string, name: string, grade?: string} | null>(null);
+  const [currentUser, setCurrentUser] = React.useState<{type: string, id: string, name: string, grade?: string, medium?: string} | null>(null);
 
   React.useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -36,7 +36,7 @@ export default function StudentDashboard() {
       const userData = JSON.parse(storedUser);
       const studentDetails = usersData.students.find(s => s.id === userData.id);
       if(studentDetails) {
-        setCurrentUser({...userData, grade: studentDetails.grade });
+        setCurrentUser({...userData, grade: studentDetails.grade, medium: studentDetails.medium });
       } else {
         setCurrentUser(userData);
       }
@@ -57,8 +57,8 @@ export default function StudentDashboard() {
     })
     .slice(0, 3);
   
-  const upcomingTests = currentUser?.grade 
-  ? initialTestsData.filter(t => t.status === 'Upcoming' && t.grade === currentUser.grade) 
+  const upcomingTests = (currentUser?.grade && currentUser?.medium)
+  ? initialTestsData.filter(t => t.status === 'Upcoming' && t.grade === currentUser.grade && t.medium === currentUser.medium) 
   : [];
 
 

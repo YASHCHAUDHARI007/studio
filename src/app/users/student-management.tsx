@@ -60,6 +60,7 @@ const studentSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Invalid email address'),
   grade: z.string().min(1, 'Grade is required'),
+  medium: z.string().min(1, 'Medium is required'),
   parentName: z.string().min(1, 'Parent name is required'),
   parentContact: z.string().min(10, 'Parent contact must be at least 10 digits').max(15),
   dateOfBirth: z.date({
@@ -85,6 +86,7 @@ export function StudentManagement() {
       name: '',
       email: '',
       grade: '',
+      medium: '',
       parentName: '',
       parentContact: '',
       dateOfBirth: undefined,
@@ -101,6 +103,7 @@ export function StudentManagement() {
       name: data.name,
       email: data.email,
       grade: data.grade,
+      medium: data.medium,
       parentName: data.parentName,
       parentContact: data.parentContact,
       dateOfBirth: format(data.dateOfBirth, 'yyyy-MM-dd'),
@@ -134,7 +137,7 @@ export function StudentManagement() {
               Add Student
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-xl">
             <DialogHeader>
               <DialogTitle>Add New Student</DialogTitle>
               <DialogDescription>
@@ -257,35 +260,59 @@ export function StudentManagement() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="grade"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Grade</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a grade" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="1st">1st Grade</SelectItem>
-                          <SelectItem value="2nd">2nd Grade</SelectItem>
-                          <SelectItem value="3rd">3rd Grade</SelectItem>
-                          <SelectItem value="4th">4th Grade</SelectItem>
-                          <SelectItem value="5th">5th Grade</SelectItem>
-                          <SelectItem value="6th">6th Grade</SelectItem>
-                          <SelectItem value="7th">7th Grade</SelectItem>
-                          <SelectItem value="8th">8th Grade</SelectItem>
-                          <SelectItem value="9th">9th Grade</SelectItem>
-                          <SelectItem value="10th">10th Grade</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                 <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                    control={form.control}
+                    name="grade"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Grade</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a grade" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            <SelectItem value="1st">1st Grade</SelectItem>
+                            <SelectItem value="2nd">2nd Grade</SelectItem>
+                            <SelectItem value="3rd">3rd Grade</SelectItem>
+                            <SelectItem value="4th">4th Grade</SelectItem>
+                            <SelectItem value="5th">5th Grade</SelectItem>
+                            <SelectItem value="6th">6th Grade</SelectItem>
+                            <SelectItem value="7th">7th Grade</SelectItem>
+                            <SelectItem value="8th">8th Grade</SelectItem>
+                            <SelectItem value="9th">9th Grade</SelectItem>
+                            <SelectItem value="10th">10th Grade</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="medium"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Medium</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select medium" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            <SelectItem value="English">English</SelectItem>
+                            <SelectItem value="Semi-English">Semi-English</SelectItem>
+                            <SelectItem value="Marathi">Marathi</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                 </div>
                 <FormField
                   control={form.control}
                   name="parentName"
@@ -334,6 +361,7 @@ export function StudentManagement() {
               <TableHead>Username</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Grade</TableHead>
+              <TableHead>Medium</TableHead>
               <TableHead>Date Joined</TableHead>
               <TableHead>Parent</TableHead>
               <TableHead>Contact</TableHead>
@@ -347,6 +375,7 @@ export function StudentManagement() {
                 <TableCell>{student.username}</TableCell>
                 <TableCell>{student.email}</TableCell>
                 <TableCell>{student.grade}</TableCell>
+                <TableCell>{student.medium}</TableCell>
                 <TableCell>{student.dateJoined}</TableCell>
                 <TableCell>{student.parentName}</TableCell>
                 <TableCell>{student.parentContact}</TableCell>
