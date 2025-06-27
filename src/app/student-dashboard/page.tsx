@@ -1,5 +1,6 @@
 'use client'
 
+import * as React from 'react'
 import {
   Card,
   CardContent,
@@ -22,10 +23,44 @@ import {
 } from "@/components/ui/chart"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { Badge } from "@/components/ui/badge"
-import { studentData, initialTestResultsData } from "@/lib/data"
+import { studentData, initialTestResultsData, initialTestsData, usersData } from "@/lib/data"
+import { format } from "date-fns"
 
 export default function StudentDashboard() {
   const { summary, schedule, performance } = studentData;
+  const [currentUser, setCurrentUser] = React.useState<{type: string, id: string, name: string, grade?: string} | null>(null);
+
+  React.useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const userData = JSON.parse(storedUser);
+      const studentDetails = usersData.students.find(s => s.id === userData.id);
+      if(studentDetails) {
+        setCurrentUser({...userData, grade: studentDetails.grade });
+      } else {
+        setCurrentUser(userData);
+      }
+    }
+  }, []);
+
+  const studentResults = initialTestResultsData
+    .filter(r => r.studentId === currentUser?.id)
+    .map(result => {
+        const test = initialTestsData.find(t => t.id === result.testId);
+        return {
+            ...result,
+            testName: test?.testName || 'N/A',
+            subject: test?.subject || 'N/A',
+            date: test ? format(new Date(test.date), 'dd MMM, yyyy') : 'N/A',
+            totalMarks: test?.totalMarks || 100,
+        };
+    })
+    .slice(0, 3);
+  
+  const upcomingTests = currentUser?.grade 
+  ? initialTestsData.filter(t => t.status === 'Upcoming' && t.grade === currentUser.grade) 
+  : [];
+
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -44,39 +79,13 @@ export default function StudentDashboard() {
                     <p className="text-3xl font-bold">{summary.attendance}</p>
                 </div>
                 <div className="flex flex-col space-y-1 rounded-lg border p-4">
-                    <h3 className="text-sm font-medium text-muted-foreground">Upcoming Assignments</h3>
-                    <p className="text-3xl font-bold">{summary.upcomingAssignments}</p>
+                    <h3 className="text-sm font-medium text-muted-foreground">Upcoming Tests</h3>
+                    <p className="text-3xl font-bold">{upcomingTests.length}</p>
                 </div>
             </CardContent>
         </Card>
-
+      
       <Card className="lg:col-span-2">
-        <CardHeader>
-          <CardTitle>Your Academic Performance</CardTitle>
-          <CardDescription>Your scores from recent tests and assignments.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={{}} className="h-64 w-full">
-            <BarChart data={performance}>
-              <CartesianGrid vertical={false} />
-              <XAxis
-                dataKey="subject"
-                tickLine={false}
-                tickMargin={10}
-                axisLine={false}
-              />
-              <YAxis />
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent indicator="dot" />}
-              />
-              <Bar dataKey="score" fill="var(--color-primary)" radius={4} />
-            </BarChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
-
-      <Card>
         <CardHeader>
           <CardTitle>Today's Schedule</CardTitle>
           <CardDescription>Your classes and activities for today.</CardDescription>
@@ -103,6 +112,37 @@ export default function StudentDashboard() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle>Upcoming Tests</CardTitle>
+           <CardDescription>Tests you need to prepare for.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {upcomingTests.length > 0 ? (
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Test</TableHead>
+                        <TableHead>Subject</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                {upcomingTests.map((test) => (
+                    <TableRow key={test.id}>
+                        <TableCell>{format(new Date(test.date), 'dd MMM, yyyy')}</TableCell>
+                        <TableCell className="font-medium">{test.testName}</TableCell>
+                        <TableCell>{test.subject}</TableCell>
+                    </TableRow>
+                ))}
+                </TableBody>
+            </Table>
+          ) : (
+             <p className="text-sm text-muted-foreground">No upcoming tests scheduled.</p>
+          )}
+        </CardContent>
+      </Card>
+
       <Card className="lg:col-span-3">
         <CardHeader>
           <CardTitle>Recent Test Results</CardTitle>
@@ -119,14 +159,14 @@ export default function StudentDashboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {initialTestResultsData.slice(0, 3).map((result) => (
+              {studentResults.map((result) => (
                 <TableRow key={result.id}>
                   <TableCell className="font-medium">{result.subject}</TableCell>
                   <TableCell>{result.testName}</TableCell>
                   <TableCell>{result.date}</TableCell>
                   <TableCell className="text-right">
-                    <Badge variant={result.score > 85 ? "default" : result.score > 60 ? "secondary" : "destructive"}>
-                      {result.score}%
+                    <Badge variant={result.score/result.totalMarks > 0.85 ? "default" : result.score/result.totalMarks > 0.60 ? "secondary" : "destructive"}>
+                      {result.score} / {result.totalMarks} ({((result.score / result.totalMarks) * 100).toFixed(0)}%)
                     </Badge>
                   </TableCell>
                 </TableRow>

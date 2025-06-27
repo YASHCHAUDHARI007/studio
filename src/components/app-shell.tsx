@@ -38,6 +38,7 @@ import {
   Moon,
   Users,
   LogOut,
+  FlaskConical,
 } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import { Badge } from './ui/badge';
@@ -46,6 +47,7 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/attendance', label: 'Attendance', icon: CalendarCheck },
   { href: '/documents', label: 'Documents', icon: FileText },
+  { href: '/tests', label: 'Tests', icon: FlaskConical },
   { href: '/fees', label: 'Fee Management', icon: CreditCard },
   { href: '/notifications', label: 'Notifications', icon: MessageCircleQuestion },
   { href: '/users', label: 'User Management', icon: Users },
@@ -55,6 +57,7 @@ const studentNavItems = [
     { href: '/student-dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/attendance', label: 'Attendance', icon: CalendarCheck },
     { href: '/documents', label: 'Documents', icon: FileText },
+    { href: '/tests', label: 'Tests', icon: FlaskConical },
     { href: '/my-fees', label: 'My Fees', icon: CreditCard },
 ];
 

@@ -66,16 +66,67 @@ export const initialDocumentsData = [
   },
 ];
 
+export const initialTestsData = [
+  {
+    id: 'TEST-001',
+    testName: 'Mid-term Exam',
+    subject: 'Science',
+    grade: '10th',
+    medium: 'English',
+    date: format(subDays(today, 14), 'yyyy-MM-dd'),
+    time: '10:00',
+    totalMarks: 100,
+    status: 'Completed',
+  },
+  {
+    id: 'TEST-002',
+    testName: 'Unit Test 1',
+    subject: 'Mathematics',
+    grade: '10th',
+    medium: 'English',
+    date: format(subDays(today, 7), 'yyyy-MM-dd'),
+    time: '11:00',
+    totalMarks: 50,
+    status: 'Completed',
+  },
+    {
+    id: 'TEST-003',
+    testName: 'Unit Test 1',
+    subject: 'Mathematics',
+    grade: '9th',
+    medium: 'Semi-English',
+    date: format(subDays(today, 7), 'yyyy-MM-dd'),
+    time: '11:00',
+    totalMarks: 50,
+    status: 'Completed',
+  },
+  {
+    id: 'TEST-004',
+    testName: 'Upcoming Quiz',
+    subject: 'History',
+    grade: '10th',
+    medium: 'English',
+    date: format(new Date(), 'yyyy-MM-dd'),
+    time: '14:00',
+    totalMarks: 25,
+    status: 'Upcoming',
+  },
+].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+
 export const initialTestResultsData = [
-    { id: 8, studentId: 'STU-001', studentName: 'Rohan Sharma', subject: 'English', testName: 'Essay Submission', date: format(subDays(today, 4), 'dd MMM, yyyy'), score: 88 },
-    { id: 7, studentId: 'STU-002', studentName: 'Priya Singh', subject: 'English', testName: 'Essay Submission', date: format(subDays(today, 4), 'dd MMM, yyyy'), score: 94 },
-    { id: 6, studentId: 'STU-003', studentName: 'Amit Patel', subject: 'Marathi', testName: 'Unit Test 1', date: format(subDays(today, 8), 'dd MMM, yyyy'), score: 80 },
-    { id: 5, studentId: 'STU-001', studentName: 'Rohan Sharma', subject: 'Mathematics', testName: 'Unit Test 1', date: format(subDays(today, 7), 'dd MMM, yyyy'), score: 85 },
-    { id: 4, studentId: 'STU-002', studentName: 'Priya Singh', subject: 'Mathematics', testName: 'Unit Test 1', date: format(subDays(today, 7), 'dd MMM, yyyy'), score: 91 },
-    { id: 3, studentId: 'STU-003', studentName: 'Amit Patel', subject: 'Mathematics', testName: 'Unit Test 1', date: format(subDays(today, 7), 'dd MMM, yyyy'), score: 76 },
-    { id: 2, studentId: 'STU-001', studentName: 'Rohan Sharma', subject: 'Science', testName: 'Mid-term Exam', date: format(subDays(today, 14), 'dd MMM, yyyy'), score: 92 },
-    { id: 1, studentId: 'STU-002', studentName: 'Priya Singh', subject: 'Science', testName: 'Mid-term Exam', date: format(subDays(today, 14), 'dd MMM, yyyy'), score: 88 },
+    // Results for TEST-001 (Science, 100 marks)
+    { id: 1, testId: 'TEST-001', studentId: 'STU-001', studentName: 'Rohan Sharma', score: 92 },
+    { id: 2, testId: 'TEST-001', studentId: 'STU-002', studentName: 'Priya Singh', score: 88 },
+
+    // Results for TEST-002 (Math, 50 marks)
+    { id: 3, testId: 'TEST-002', studentId: 'STU-001', studentName: 'Rohan Sharma', score: 43 },
+    { id: 4, testId: 'TEST-002', studentId: 'STU-002', studentName: 'Priya Singh', score: 46 },
+
+    // Results for TEST-003 (Math, 50 marks)
+    { id: 5, testId: 'TEST-003', studentId: 'STU-003', studentName: 'Amit Patel', score: 38 },
 ];
+
 
 export const initialStudentFeeData = {
   summary: {
