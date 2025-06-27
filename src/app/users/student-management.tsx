@@ -40,6 +40,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { usersData } from "@/lib/data"
 import { CalendarIcon, UserPlus } from 'lucide-react'
