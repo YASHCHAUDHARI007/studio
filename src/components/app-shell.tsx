@@ -37,6 +37,7 @@ import {
   Bell,
   Sun,
   Moon,
+  Users,
 } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import { Badge } from './ui/badge';
@@ -47,6 +48,7 @@ const navItems = [
   { href: '/documents', label: 'Documents', icon: FileText },
   { href: '/fees', label: 'Fee Management', icon: CreditCard },
   { href: '/notifications', label: 'Notifications', icon: MessageCircleQuestion },
+  { href: '/users', label: 'User Management', icon: Users },
 ];
 
 function AppHeader() {
