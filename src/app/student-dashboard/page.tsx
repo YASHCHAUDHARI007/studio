@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/chart"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { Badge } from "@/components/ui/badge"
-import { studentData, testResultsData } from "@/lib/data"
+import { studentData, initialTestResultsData } from "@/lib/data"
 
 export default function StudentDashboard() {
   const { summary, schedule, performance } = studentData;
@@ -119,7 +119,7 @@ export default function StudentDashboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {testResultsData.slice(0, 3).map((result) => (
+              {initialTestResultsData.slice(0, 3).map((result) => (
                 <TableRow key={result.id}>
                   <TableCell className="font-medium">{result.subject}</TableCell>
                   <TableCell>{result.testName}</TableCell>

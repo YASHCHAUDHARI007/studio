@@ -42,28 +42,31 @@ export const attendanceData = {
   holidays: [subDays(today, 1), subDays(today, 16), subDays(today, 17)],
 };
 
-export const documentsData = [
+export const initialDocumentsData = [
   {
     id: 1,
     title: 'Algebra Chapter 5 Notes',
     subject: 'Mathematics',
     uploadDate: format(subDays(today, 2), 'dd MMM, yyyy'),
+    url: 'https://docs.google.com/document/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit?usp=sharing',
   },
   {
     id: 2,
     title: 'Thermodynamics Summary',
     subject: 'Physics',
     uploadDate: format(subDays(today, 5), 'dd MMM, yyyy'),
+    url: 'https://docs.google.com/document/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit?usp=sharing',
   },
   {
     id: 3,
     title: 'Indian Independence Movement',
     subject: 'History',
     uploadDate: format(subDays(today, 10), 'dd MMM, yyyy'),
+    url: 'https://docs.google.com/document/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit?usp=sharing',
   },
 ];
 
-export const testResultsData = [
+export const initialTestResultsData = [
     { id: 1, subject: 'Mathematics', testName: 'Unit Test 1', date: format(subDays(today, 7), 'dd MMM, yyyy'), score: 85 },
     { id: 2, subject: 'Science', testName: 'Mid-term Exam', date: format(subDays(today, 14), 'dd MMM, yyyy'), score: 92 },
     { id: 3, subject: 'English', testName: 'Essay Submission', date: format(subDays(today, 4), 'dd MMM, yyyy'), score: 88 },
@@ -71,7 +74,7 @@ export const testResultsData = [
     { id: 5, subject: 'Marathi', testName: 'Unit Test 1', date: format(subDays(today, 8), 'dd MMM, yyyy'), score: 95 },
 ];
 
-export const studentFeeData = {
+export const initialStudentFeeData = {
   summary: {
     total: 75000,
     paid: 50000,
@@ -85,7 +88,7 @@ export const studentFeeData = {
   ],
 };
 
-export const allStudentsFeeData = {
+export const initialAllStudentsFeeData = {
   'STU-001': {
     name: 'Rohan Sharma',
     summary: { total: 75000, paid: 50000, due: 25000, dueDate: '31 Aug, 2024' },

@@ -17,14 +17,14 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { allStudentsFeeData, usersData } from "@/lib/data"
+import { initialAllStudentsFeeData, usersData } from "@/lib/data"
 import { Users, User, DollarSign } from 'lucide-react'
 
 export function SuperAdminDashboard() {
   const { students, teachers } = usersData;
   const totalStudents = students.length;
   const totalTeachers = teachers.length;
-  const totalDues = Object.values(allStudentsFeeData).reduce((acc, student) => acc + student.summary.due, 0);
+  const totalDues = Object.values(initialAllStudentsFeeData).reduce((acc, student) => acc + student.summary.due, 0);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -147,7 +147,7 @@ export function SuperAdminDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {Object.values(allStudentsFeeData).map((feeData) => (
+                {Object.values(initialAllStudentsFeeData).map((feeData) => (
                   <TableRow key={feeData.name}>
                     <TableCell className="font-medium">{feeData.name}</TableCell>
                     <TableCell className="text-right">{formatCurrency(feeData.summary.total)}</TableCell>

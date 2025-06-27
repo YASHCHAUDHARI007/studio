@@ -27,13 +27,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { allStudentsFeeData, usersData } from "@/lib/data"
+import { initialAllStudentsFeeData, usersData } from "@/lib/data"
 import { Label } from '@/components/ui/label'
+import { useToast } from '@/hooks/use-toast'
 
 export default function FeesPage() {
+  const { toast } = useToast()
   const [selectedStudentId, setSelectedStudentId] = React.useState<string | null>(null)
+  const [studentsFeeData, setStudentsFeeData] = React.useState(initialAllStudentsFeeData)
 
-  const feeData = selectedStudentId ? allStudentsFeeData[selectedStudentId as keyof typeof allStudentsFeeData] : null
+  const feeData = selectedStudentId ? studentsFeeData[selectedStudentId as keyof typeof studentsFeeData] : null
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -51,6 +54,39 @@ export default function FeesPage() {
       default:
         return 'secondary';
     }
+  }
+
+  const handleMarkAsPaid = (month: string) => {
+    if (!selectedStudentId || !feeData) return
+
+    setStudentsFeeData(prevData => {
+      const updatedStudentData = { ...prevData[selectedStudentId] }
+      const breakdown = updatedStudentData.monthlyBreakdown.map(item => {
+        if (item.month === month && item.status === 'Due') {
+          return { ...item, paid: item.total, status: 'Paid' }
+        }
+        return item
+      })
+
+      const paidAmount = breakdown.reduce((acc, item) => acc + item.paid, 0)
+      const dueAmount = updatedStudentData.summary.total - paidAmount
+
+      updatedStudentData.monthlyBreakdown = breakdown
+      updatedStudentData.summary.paid = paidAmount
+      updatedStudentData.summary.due = dueAmount
+
+      return {
+        ...prevData,
+        [selectedStudentId]: updatedStudentData,
+      }
+    })
+
+    toast({ title: "Payment Updated", description: `Marked ${month} as paid for ${feeData.name}.` })
+  }
+
+  const handleSendReminder = () => {
+    if (!feeData) return
+    toast({ title: "Reminder Sent", description: `A payment reminder has been sent for ${feeData.name}.` })
   }
 
   return (
@@ -118,7 +154,7 @@ export default function FeesPage() {
                 <span>
                   Outstanding balance of {formatCurrency(feeData.summary.due)}. Next due date is {feeData.summary.dueDate}.
                 </span>
-                <Button size="sm">
+                <Button size="sm" onClick={handleSendReminder}>
                   <Send className="mr-2 h-4 w-4" />
                   Send Reminder
                 </Button>
@@ -165,7 +201,7 @@ export default function FeesPage() {
                       </TableCell>
                       <TableCell className="text-center">
                         {item.status === 'Due' ? (
-                          <Button size="sm" variant="outline">Mark as Paid</Button>
+                          <Button size="sm" variant="outline" onClick={() => handleMarkAsPaid(item.month)}>Mark as Paid</Button>
                         ) : item.status === 'Paid' ? (
                           <Button size="sm" variant="ghost" disabled>Paid</Button>
                         ) : (

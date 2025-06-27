@@ -1,3 +1,6 @@
+'use client'
+
+import * as React from 'react'
 import {
   Card,
   CardContent,
@@ -17,15 +20,14 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { AlertCircle } from "lucide-react"
-import { studentFeeData } from "@/lib/data"
+import { initialStudentFeeData } from "@/lib/data"
 import { Metadata } from "next"
-
-export const metadata: Metadata = {
-  title: 'My Fees',
-};
+import { useToast } from "@/hooks/use-toast"
 
 export default function MyFeesPage() {
-  const { summary, monthlyBreakdown } = studentFeeData
+  const { toast } = useToast()
+  const [feeData, setFeeData] = React.useState(initialStudentFeeData)
+  const { summary, monthlyBreakdown } = feeData
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -43,6 +45,31 @@ export default function MyFeesPage() {
       default:
         return 'secondary';
     }
+  }
+
+  const handlePayNow = (month: string) => {
+    setFeeData(prevData => {
+      const updatedBreakdown = prevData.monthlyBreakdown.map(item => {
+        if (item.month === month && item.status === 'Due') {
+          return { ...item, paid: item.total, status: 'Paid' }
+        }
+        return item
+      })
+
+      const paidAmount = updatedBreakdown.reduce((acc, item) => acc + item.paid, 0)
+      const dueAmount = prevData.summary.total - paidAmount
+      
+      return {
+        ...prevData,
+        monthlyBreakdown: updatedBreakdown,
+        summary: {
+          ...prevData.summary,
+          paid: paidAmount,
+          due: dueAmount,
+        }
+      }
+    })
+    toast({ title: 'Payment Successful', description: `Your payment for ${month} has been recorded.` })
   }
 
   return (
@@ -88,7 +115,7 @@ export default function MyFeesPage() {
             <span>
               You have an outstanding balance of {formatCurrency(summary.due)}. Next due date is {summary.dueDate}.
             </span>
-            <Button size="sm">Pay Now</Button>
+            <Button size="sm">Pay All Dues</Button>
           </AlertDescription>
         </Alert>
       )}
@@ -122,7 +149,7 @@ export default function MyFeesPage() {
                   </TableCell>
                   <TableCell className="text-center">
                     {item.status === 'Due' ? (
-                      <Button size="sm" variant="outline">Pay Now</Button>
+                      <Button size="sm" variant="outline" onClick={() => handlePayNow(item.month)}>Pay Now</Button>
                     ) : item.status === 'Paid' ? (
                       <Button size="sm" variant="ghost" disabled>Paid</Button>
                     ) : (
