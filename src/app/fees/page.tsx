@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 };
 
 export default function FeesPage() {
-  const { summary, history } = feeData
+  const { summary, monthlyBreakdown } = feeData
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -34,12 +34,23 @@ export default function FeesPage() {
     }).format(amount)
   }
 
+  const getBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'Paid':
+        return 'default';
+      case 'Due':
+        return 'destructive';
+      default:
+        return 'secondary';
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle>Total Fees</CardTitle>
+            <CardTitle>Total Annual Fees</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">{formatCurrency(summary.total)}</p>
@@ -47,7 +58,7 @@ export default function FeesPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Fees Paid</CardTitle>
+            <CardTitle>Total Paid</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-primary">{formatCurrency(summary.paid)}</p>
@@ -55,7 +66,7 @@ export default function FeesPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Outstanding Dues</CardTitle>
+            <CardTitle>Total Dues</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-destructive">{formatCurrency(summary.due)}</p>
@@ -69,7 +80,7 @@ export default function FeesPage() {
           <AlertTitle>Payment Due</AlertTitle>
           <AlertDescription className="flex items-center justify-between">
             <span>
-              You have an outstanding balance of {formatCurrency(summary.due)}. Please pay by {summary.dueDate}.
+              You have an outstanding balance of {formatCurrency(summary.due)}. Next due date is {summary.dueDate}.
             </span>
             <Button size="sm">Pay Now</Button>
           </AlertDescription>
@@ -79,9 +90,9 @@ export default function FeesPage() {
       <Card>
         <CardHeader className="flex-row items-center justify-between">
           <div>
-            <CardTitle>Transaction History</CardTitle>
+            <CardTitle>Monthly Fee Breakdown</CardTitle>
             <CardDescription>
-              A record of all your fee payments.
+              A month-by-month record of your fee payments.
             </CardDescription>
           </div>
           <Button variant="outline">
@@ -93,26 +104,34 @@ export default function FeesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Invoice ID</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Amount</TableHead>
+                <TableHead>Month</TableHead>
+                <TableHead className="text-right">Total</TableHead>
+                <TableHead className="text-right">Paid</TableHead>
+                <TableHead className="text-right">Due</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-center">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {history.map((transaction) => (
-                <TableRow key={transaction.id}>
-                  <TableCell className="font-mono text-muted-foreground">{transaction.id}</TableCell>
-                  <TableCell>{transaction.date}</TableCell>
-                  <TableCell>{formatCurrency(transaction.amount)}</TableCell>
+              {monthlyBreakdown.map((item) => (
+                <TableRow key={item.month}>
+                  <TableCell className="font-medium">{item.month}</TableCell>
+                  <TableCell className="text-right">{formatCurrency(item.total)}</TableCell>
+                  <TableCell className="text-right text-primary">{formatCurrency(item.paid)}</TableCell>
+                  <TableCell className="text-right text-destructive">{formatCurrency(item.total - item.paid)}</TableCell>
                   <TableCell>
-                    <Badge
-                      variant={
-                        transaction.status === 'Paid' ? 'default' : 'destructive'
-                      }
-                    >
-                      {transaction.status}
+                    <Badge variant={getBadgeVariant(item.status)}>
+                      {item.status}
                     </Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {item.status === 'Due' ? (
+                      <Button size="sm" variant="outline">Pay Now</Button>
+                    ) : item.status === 'Paid' ? (
+                      <Button size="sm" variant="ghost" disabled>Paid</Button>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">-</span>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

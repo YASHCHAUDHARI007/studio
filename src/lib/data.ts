@@ -1,4 +1,3 @@
-
 import { subDays, format } from 'date-fns';
 
 const today = new Date();
@@ -73,18 +72,31 @@ export const testResultsData = [
 ];
 
 
+const monthlyFees = [
+    { month: 'August 2024', invoiceId: 'INV-2024004', total: 5000, paid: 0, status: 'Due', dueDate: '31 Aug, 2024' },
+    { month: 'July 2024', invoiceId: 'INV-2024003', total: 25000, paid: 25000, status: 'Paid', dueDate: '30 Jul, 2024' },
+    { month: 'June 2024', invoiceId: 'INV-2024002', total: 20000, paid: 20000, status: 'Paid', dueDate: '15 Jun, 2024' },
+    { month: 'May 2024', invoiceId: null, total: 0, paid: 0, status: 'No Dues', dueDate: null },
+    { month: 'April 2024', invoiceId: 'INV-2024001', total: 25000, paid: 25000, status: 'Paid', dueDate: '15 Apr, 2024' },
+];
+
+const feeSummary = monthlyFees.reduce((acc, fee) => {
+    acc.total += fee.total;
+    acc.paid += fee.paid;
+    return acc;
+}, { total: 0, paid: 0 });
+
+const dueAmount = feeSummary.total - feeSummary.paid;
+const nextDueItem = monthlyFees.find(f => f.status === 'Due');
+
 export const feeData = {
   summary: {
-    total: 50000,
-    paid: 45000,
-    due: 5000,
-    dueDate: format(new Date(today.getFullYear(), today.getMonth() + 1, 0), 'dd MMM, yyyy'),
+    total: feeSummary.total,
+    paid: feeSummary.paid,
+    due: dueAmount,
+    dueDate: nextDueItem ? nextDueItem.dueDate : 'N/A',
   },
-  history: [
-    { id: 'INV-2024001', date: '15 Apr, 2024', amount: 25000, status: 'Paid' },
-    { id: 'INV-2024002', date: '12 Jun, 2024', amount: 20000, status: 'Paid' },
-    { id: 'INV-2024003', date: '30 Jul, 2024', amount: 5000, status: 'Due' },
-  ],
+  monthlyBreakdown: monthlyFees,
 };
 
 export const usersData = {
