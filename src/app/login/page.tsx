@@ -10,6 +10,8 @@ import { useToast } from '@/hooks/use-toast'
 import { usersData } from '@/lib/data'
 import { Icons } from '@/components/icons'
 import { Loader2 } from 'lucide-react'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -53,7 +55,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
             <div className="mb-4 flex justify-center">
@@ -92,6 +94,62 @@ export default function LoginPage() {
               {isLoading ? 'Logging in...' : 'Login'}
             </Button>
           </form>
+        </CardContent>
+      </Card>
+      
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle className="text-lg">Test Credentials</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="students">
+              <AccordionTrigger>Student Logins</AccordionTrigger>
+              <AccordionContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="font-mono">Username</TableHead>
+                      <TableHead className="font-mono">Password</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell className="font-mono">9876543210</TableCell>
+                      <TableCell className="font-mono">rohan27072007</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-mono">9876543211</TableCell>
+                      <TableCell className="font-mono">priya15052007</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="teachers">
+              <AccordionTrigger>Teacher/Admin Logins</AccordionTrigger>
+              <AccordionContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="font-mono">Username</TableHead>
+                      <TableHead className="font-mono">Password</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell className="font-mono">admin</TableCell>
+                      <TableCell className="font-mono">admin</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-mono">davis@example.com</TableCell>
+                      <TableCell className="font-mono">password123</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </CardContent>
       </Card>
     </div>
