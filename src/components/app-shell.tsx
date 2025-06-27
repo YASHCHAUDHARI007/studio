@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   SidebarProvider,
@@ -15,7 +15,6 @@ import {
   SidebarInset,
   SidebarTrigger,
   useSidebar,
-  SidebarFooter,
 } from '@/components/ui/sidebar';
 import {
   DropdownMenu,
@@ -38,12 +37,13 @@ import {
   Sun,
   Moon,
   Users,
+  LogOut,
 } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import { Badge } from './ui/badge';
 
 const navItems = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/attendance', label: 'Attendance', icon: CalendarCheck },
   { href: '/documents', label: 'Documents', icon: FileText },
   { href: '/fees', label: 'Fee Management', icon: CreditCard },
@@ -51,9 +51,17 @@ const navItems = [
   { href: '/users', label: 'User Management', icon: Users },
 ];
 
+const studentNavItems = [
+    { href: '/student-dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/attendance', label: 'Attendance', icon: CalendarCheck },
+    { href: '/documents', label: 'Documents', icon: FileText },
+    { href: '/fees', label: 'Fee Management', icon: CreditCard },
+];
+
 function AppHeader() {
   const { toggleSidebar } = useSidebar();
   const [theme, setTheme] = React.useState('light');
+  const router = useRouter();
 
   React.useEffect(() => {
     const isDarkMode = document.documentElement.classList.contains('dark');
@@ -64,6 +72,10 @@ function AppHeader() {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
     document.documentElement.classList.toggle('dark', newTheme === 'dark');
+  };
+
+  const handleLogout = () => {
+    router.push('/login');
   };
 
   return (
@@ -100,8 +112,8 @@ function AppHeader() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-9 w-9 rounded-full">
               <Avatar className="h-9 w-9">
-                <AvatarImage src="https://placehold.co/100x100.png" alt="Anjali Kulkarni" data-ai-hint="teacher portrait" />
-                <AvatarFallback>AK</AvatarFallback>
+                <AvatarImage src="https://placehold.co/100x100.png" alt="User Avatar" data-ai-hint="person portrait" />
+                <AvatarFallback>U</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
@@ -111,7 +123,10 @@ function AppHeader() {
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Logout</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Logout</span>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -121,17 +136,21 @@ function AppHeader() {
 
 function MainSidebar() {
     const pathname = usePathname();
+    const isStudentRoute = pathname.startsWith('/student-dashboard');
+    const currentNavItems = isStudentRoute ? studentNavItems : navItems;
+    const homeUrl = isStudentRoute ? '/student-dashboard' : '/dashboard';
+
     return (
         <Sidebar>
             <SidebarHeader className="p-2">
-                <Link href="/" className="flex items-center gap-2.5">
+                <Link href={homeUrl} className="flex items-center gap-2.5">
                     <Icons.logo className="size-8 text-primary" />
                     <span className="text-xl font-headline font-semibold group-data-[collapsible=icon]:hidden">ShikshaSetu</span>
                 </Link>
             </SidebarHeader>
             <SidebarContent className="p-2">
                 <SidebarMenu>
-                    {navItems.map((item) => (
+                    {currentNavItems.map((item) => (
                         <SidebarMenuItem key={item.href}>
                             <SidebarMenuButton
                                 asChild
