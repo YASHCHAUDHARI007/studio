@@ -31,9 +31,9 @@ export default function Dashboard() {
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       <Card className="lg:col-span-3">
         <CardHeader>
-          <CardTitle>At-a-Glance Summary</CardTitle>
+          <CardTitle>Student Overview</CardTitle>
           <CardDescription>
-            A quick overview of {summary.studentName}'s recent progress.
+            A detailed look at {summary.studentName}'s academic profile.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-6 md:grid-cols-3">

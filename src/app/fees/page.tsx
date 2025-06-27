@@ -50,7 +50,7 @@ export default function FeesPage() {
             <CardTitle>Fees Paid</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-green-600">{formatCurrency(summary.paid)}</p>
+            <p className="text-3xl font-bold text-primary">{formatCurrency(summary.paid)}</p>
           </CardContent>
         </Card>
         <Card>
@@ -110,7 +110,6 @@ export default function FeesPage() {
                       variant={
                         transaction.status === 'Paid' ? 'default' : 'destructive'
                       }
-                      className={transaction.status === 'Paid' ? 'bg-green-500' : ''}
                     >
                       {transaction.status}
                     </Badge>

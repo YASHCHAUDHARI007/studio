@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/chart"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { Badge } from "@/components/ui/badge"
-import { studentData } from "@/lib/data"
+import { studentData, testResultsData } from "@/lib/data"
 
 export default function StudentDashboard() {
   const { summary, schedule, performance } = studentData;
@@ -95,6 +95,39 @@ export default function StudentDashboard() {
                   <TableCell className="font-medium">{item.time}</TableCell>
                   <TableCell>
                     <Badge variant={item.type === 'class' ? 'default' : 'secondary'}>{item.subject}</Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <Card className="lg:col-span-3">
+        <CardHeader>
+          <CardTitle>Recent Test Results</CardTitle>
+          <CardDescription>A summary of your most recent test scores.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Subject</TableHead>
+                <TableHead>Test Name</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead className="text-right">Score</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {testResultsData.slice(0, 3).map((result) => (
+                <TableRow key={result.id}>
+                  <TableCell className="font-medium">{result.subject}</TableCell>
+                  <TableCell>{result.testName}</TableCell>
+                  <TableCell>{result.date}</TableCell>
+                  <TableCell className="text-right">
+                    <Badge variant={result.score > 85 ? "default" : result.score > 60 ? "secondary" : "destructive"}>
+                      {result.score}%
+                    </Badge>
                   </TableCell>
                 </TableRow>
               ))}
