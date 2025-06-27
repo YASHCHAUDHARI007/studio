@@ -65,6 +65,9 @@ const studentSchema = z.object({
   dateOfBirth: z.date({
     required_error: "Date of birth is required.",
   }),
+  dateJoined: z.date({
+    required_error: "Date joined is required.",
+  }),
 })
 
 type StudentFormValues = z.infer<typeof studentSchema>
@@ -85,6 +88,7 @@ export function StudentManagement() {
       parentName: '',
       parentContact: '',
       dateOfBirth: undefined,
+      dateJoined: undefined,
     },
   })
 
@@ -100,6 +104,7 @@ export function StudentManagement() {
       parentName: data.parentName,
       parentContact: data.parentContact,
       dateOfBirth: format(data.dateOfBirth, 'yyyy-MM-dd'),
+      dateJoined: format(data.dateJoined, 'yyyy-MM-dd'),
       username: username,
       password: password,
     }
@@ -210,6 +215,50 @@ export function StudentManagement() {
                 />
                 <FormField
                   control={form.control}
+                  name="dateJoined"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Date Joined</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP")
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            captionLayout="dropdown-buttons"
+                            fromYear={2010}
+                            toYear={new Date().getFullYear()}
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) =>
+                              date > new Date() || date < new Date("2010-01-01")
+                            }
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
                   name="grade"
                   render={({ field }) => (
                     <FormItem>
@@ -285,6 +334,7 @@ export function StudentManagement() {
               <TableHead>Username</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Grade</TableHead>
+              <TableHead>Date Joined</TableHead>
               <TableHead>Parent</TableHead>
               <TableHead>Contact</TableHead>
             </TableRow>
@@ -297,6 +347,7 @@ export function StudentManagement() {
                 <TableCell>{student.username}</TableCell>
                 <TableCell>{student.email}</TableCell>
                 <TableCell>{student.grade}</TableCell>
+                <TableCell>{student.dateJoined}</TableCell>
                 <TableCell>{student.parentName}</TableCell>
                 <TableCell>{student.parentContact}</TableCell>
               </TableRow>
