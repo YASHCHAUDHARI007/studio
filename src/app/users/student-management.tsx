@@ -43,6 +43,13 @@ import { Input } from '@/components/ui/input'
 import { useToast } from '@/hooks/use-toast'
 import { usersData } from "@/lib/data"
 import { UserPlus } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 const studentSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -139,9 +146,25 @@ export function StudentManagement() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Grade</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., 10th A" {...field} />
-                      </FormControl>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a grade" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="1st">1st Grade</SelectItem>
+                          <SelectItem value="2nd">2nd Grade</SelectItem>
+                          <SelectItem value="3rd">3rd Grade</SelectItem>
+                          <SelectItem value="4th">4th Grade</SelectItem>
+                          <SelectItem value="5th">5th Grade</SelectItem>
+                          <SelectItem value="6th">6th Grade</SelectItem>
+                          <SelectItem value="7th">7th Grade</SelectItem>
+                          <SelectItem value="8th">8th Grade</SelectItem>
+                          <SelectItem value="9th">9th Grade</SelectItem>
+                          <SelectItem value="10th">10th Grade</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
