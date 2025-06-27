@@ -75,6 +75,7 @@ function AppHeader() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('userType');
     router.push('/login');
   };
 
@@ -136,9 +137,18 @@ function AppHeader() {
 
 function MainSidebar() {
     const pathname = usePathname();
-    const isStudentRoute = pathname.startsWith('/student-dashboard') || pathname.startsWith('/my-fees');
-    const currentNavItems = isStudentRoute ? studentNavItems : navItems;
-    const homeUrl = isStudentRoute ? '/student-dashboard' : '/dashboard';
+    const [userType, setUserType] = React.useState<string | null>(null);
+
+    React.useEffect(() => {
+        // This runs on the client and will re-run if the pathname changes.
+        const storedUserType = localStorage.getItem('userType');
+        setUserType(storedUserType);
+    }, [pathname]);
+
+    // Choose nav items based on user type
+    const currentNavItems = userType === 'student' ? studentNavItems : navItems;
+    const homeUrl = userType === 'student' ? '/student-dashboard' : '/dashboard';
+
 
     return (
         <Sidebar>

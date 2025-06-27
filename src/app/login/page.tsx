@@ -23,6 +23,9 @@ export default function LoginPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    
+    // Clear previous user type
+    localStorage.removeItem('userType');
 
     // Mock authentication
     setTimeout(() => {
@@ -33,15 +36,17 @@ export default function LoginPage() {
         (t) => t.username === username && t.password === password
       )
 
-      if (student) {
+      if (username === 'superadmin' && password === 'superpassword') {
+        toast({ title: 'Login Successful', description: 'Welcome, Super Admin!' })
+        localStorage.setItem('userType', 'superadmin');
+        router.push('/dashboard')
+      } else if (student) {
         toast({ title: 'Login Successful', description: `Welcome back, ${student.name}!` })
+        localStorage.setItem('userType', 'student');
         router.push('/student-dashboard')
       } else if (teacher) {
         toast({ title: 'Login Successful', description: `Welcome back, ${teacher.name}!` })
-        router.push('/dashboard')
-      } else if (username === 'admin' && password === 'admin') {
-        // Mock admin/teacher login
-        toast({ title: 'Login Successful', description: 'Welcome back, Admin!' })
+        localStorage.setItem('userType', 'teacher');
         router.push('/dashboard')
       } else {
         toast({
@@ -138,8 +143,8 @@ export default function LoginPage() {
                   </TableHeader>
                   <TableBody>
                     <TableRow>
-                      <TableCell className="font-mono">admin</TableCell>
-                      <TableCell className="font-mono">admin</TableCell>
+                      <TableCell className="font-mono">superadmin</TableCell>
+                      <TableCell className="font-mono">superpassword</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell className="font-mono">davis@example.com</TableCell>
