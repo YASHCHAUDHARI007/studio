@@ -89,9 +89,9 @@ export const feeData = {
 
 export const usersData = {
   students: [
-    { id: 'STU-001', name: 'Rohan Sharma', grade: '10th A', parentName: 'Mr. Sharma', parentContact: '9876543210', email: 'rohan.sharma@example.com' },
-    { id: 'STU-002', name: 'Priya Singh', grade: '10th B', parentName: 'Ms. Singh', parentContact: '9876543211', email: 'priya.singh@example.com' },
-    { id: 'STU-003', name: 'Amit Patel', grade: '9th A', parentName: 'Mr. Patel', parentContact: '9876543212', email: 'amit.patel@example.com' },
+    { id: 'STU-001', name: 'Rohan Sharma', grade: '10th', parentName: 'Mr. Sharma', parentContact: '9876543210', email: 'rohan.sharma@example.com', dateOfBirth: '2007-07-27', username: '9876543210', password: 'rohan27072007' },
+    { id: 'STU-002', name: 'Priya Singh', grade: '10th', parentName: 'Ms. Singh', parentContact: '9876543211', email: 'priya.singh@example.com', dateOfBirth: '2007-05-15', username: '9876543211', password: 'priya15052007' },
+    { id: 'STU-003', name: 'Amit Patel', grade: '9th', parentName: 'Mr. Patel', parentContact: '9876543212', email: 'amit.patel@example.com', dateOfBirth: '2008-09-01', username: '9876543212', password: 'amit01092008' },
   ],
   teachers: [
     { id: 'TCH-001', name: 'Mrs. Davis', subject: 'Mathematics', email: 'mrs.davis@example.com' },
