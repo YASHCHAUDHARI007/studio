@@ -1,3 +1,4 @@
+
 'use client'
 
 import * as React from 'react'
@@ -66,6 +67,7 @@ const paymentSchema = z.object({
 export default function FeesPage() {
   const { toast } = useToast()
   const [selectedStudentId, setSelectedStudentId] = React.useState<string | null>(null)
+  const [isRecordPaymentOpen, setIsRecordPaymentOpen] = React.useState(false);
   
   const [students, setStudents] = React.useState(() => {
     if (typeof window === 'undefined') return usersData.students;

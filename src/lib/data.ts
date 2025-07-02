@@ -25,23 +25,6 @@ export const studentData = {
   ],
 };
 
-export const attendanceData = {
-  present: [
-    subDays(today, 2),
-    subDays(today, 3),
-    subDays(today, 4),
-    subDays(today, 7),
-    subDays(today, 8),
-    subDays(today, 9),
-    subDays(today, 10),
-    subDays(today, 11),
-    subDays(today, 14),
-    subDays(today, 15),
-  ],
-  absent: [subDays(today, 5)],
-  holidays: [subDays(today, 1), subDays(today, 16), subDays(today, 17)],
-};
-
 export const initialDocumentsData = [
   {
     id: 1,
