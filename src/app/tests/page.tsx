@@ -90,14 +90,10 @@ export default function TestsPage() {
   const { toast } = useToast()
   const [currentUser, setCurrentUser] = React.useState<{type: string; id?: string; name?: string; grade?: string; medium?: string;} | null>(null);
   
-  const [allStudents, setAllStudents] = React.useState(() => {
-    if (typeof window === 'undefined') return usersData.students;
-    const saved = localStorage.getItem('shiksha-students');
-    return saved ? JSON.parse(saved) : usersData.students;
-  });
+  const [allStudents, setAllStudents] = React.useState<any[]>([]);
 
-  const [tests, setTests] = React.useState<Test[]>(initialTestsData)
-  const [testResults, setTestResults] = React.useState(initialTestResultsData)
+  const [tests, setTests] = React.useState<Test[]>([])
+  const [testResults, setTestResults] = React.useState([])
   
   const [isScheduleTestOpen, setIsScheduleTestOpen] = React.useState(false)
   const [isEnterMarksOpen, setIsEnterMarksOpen] = React.useState(false)
@@ -121,6 +117,11 @@ export default function TestsPage() {
   });
   
   React.useEffect(() => {
+    // This now runs only on the client
+    const savedStudents = localStorage.getItem('shiksha-students');
+    const currentStudents = savedStudents ? JSON.parse(savedStudents) : usersData.students;
+    setAllStudents(currentStudents);
+
     const savedTests = localStorage.getItem('shiksha-tests');
     setTests(savedTests ? JSON.parse(savedTests) : initialTestsData);
 
@@ -131,7 +132,7 @@ export default function TestsPage() {
     if (storedUser) {
         const userData = JSON.parse(storedUser);
         if (userData.type === 'student') {
-            const studentDetails = allStudents.find(s => s.id === userData.id);
+            const studentDetails = currentStudents.find((s:any) => s.id === userData.id);
             if (studentDetails) {
                 setCurrentUser({ ...userData, grade: studentDetails.grade, medium: studentDetails.medium });
             } else {
@@ -141,14 +142,18 @@ export default function TestsPage() {
             setCurrentUser(userData);
         }
     }
-  }, [allStudents]);
+  }, []);
 
   React.useEffect(() => {
-    localStorage.setItem('shiksha-tests', JSON.stringify(tests));
+    if (tests.length > 0) {
+      localStorage.setItem('shiksha-tests', JSON.stringify(tests));
+    }
   }, [tests]);
 
   React.useEffect(() => {
-    localStorage.setItem('shiksha-test-results', JSON.stringify(testResults));
+    if (testResults.length > 0) {
+      localStorage.setItem('shiksha-test-results', JSON.stringify(testResults));
+    }
   }, [testResults]);
 
   const userType = currentUser?.type;
@@ -219,7 +224,7 @@ export default function TestsPage() {
     const marksData = studentsOfBatch.map(s => ({ 
         studentId: s.id, 
         studentName: s.name, 
-        score: testResults.find(r => r.testId === test.id && r.studentId === s.id)?.score ?? undefined
+        score: testResults.find((r:any) => r.testId === test.id && r.studentId === s.id)?.score ?? undefined
     }));
     replace(marksData);
     setSelectedTestForMarks(test);
@@ -249,8 +254,8 @@ export default function TestsPage() {
         score: mark.score!,
       }));
     
-    const otherResults = testResults.filter(r => r.testId !== selectedTestForMarks.id);
-    setTestResults([...otherResults, ...newResults]);
+    const otherResults = testResults.filter((r:any) => r.testId !== selectedTestForMarks.id);
+    setTestResults([...otherResults, ...newResults] as any);
     
     toast({ title: "Success", description: "Test results have been saved." });
     setIsEnterMarksOpen(false);
@@ -275,20 +280,27 @@ export default function TestsPage() {
   
   const [selectedResultTestId, setSelectedResultTestId] = React.useState<string | undefined>(completedTests[0]?.id);
   
+  React.useEffect(() => {
+    if (completedTests.length > 0 && !selectedResultTestId) {
+      setSelectedResultTestId(completedTests[0].id);
+    }
+  }, [completedTests, selectedResultTestId]);
+
+  
   const selectedTestForResults = tests.find(t => t.id === selectedResultTestId);
 
   const resultsForSelectedTest = React.useMemo(() => {
-    const results = testResults.filter(r => r.testId === selectedResultTestId);
+    const results = testResults.filter((r:any) => r.testId === selectedResultTestId);
     if (userType === 'student') {
-        return results.filter(r => r.studentId === currentUser?.id);
+        return results.filter((r:any) => r.studentId === currentUser?.id);
     }
     return results;
   }, [testResults, selectedResultTestId, userType, currentUser]);
   
   let classAverage = 0;
   if (selectedTestForResults && resultsForSelectedTest.length > 0) {
-    const totalScore = testResults.filter(r => r.testId === selectedResultTestId).reduce((sum, r) => sum + r.score, 0);
-    const totalStudentsInTest = testResults.filter(r => r.testId === selectedResultTestId).length;
+    const totalScore = testResults.filter((r:any) => r.testId === selectedResultTestId).reduce((sum, r:any) => sum + r.score, 0);
+    const totalStudentsInTest = testResults.filter((r:any) => r.testId === selectedResultTestId).length;
     classAverage = totalStudentsInTest > 0 ? (totalScore / totalStudentsInTest / selectedTestForResults.totalMarks) * 100 : 0;
   }
 
@@ -355,7 +367,7 @@ export default function TestsPage() {
                       <TableCell className="font-medium">{test.testName}</TableCell>
                       <TableCell>{test.subject}</TableCell>
                       <TableCell>{test.grade} ({test.medium})</TableCell>
-                      <TableCell>{format(new Date(test.date), 'dd MMM, yyyy')} @ {formatTime12Hour(test.time)}</TableCell>
+                      <TableCell>{format(new Date(`${test.date}T00:00:00`), 'dd MMM, yyyy')} @ {formatTime12Hour(test.time)}</TableCell>
                       <TableCell>{test.totalMarks}</TableCell>
                       <TableCell>
                         <Badge variant={test.status === 'Completed' ? 'secondary' : 'default'}>{test.status}</Badge>
@@ -430,7 +442,7 @@ export default function TestsPage() {
                         </TableHeader>
                         <TableBody>
                             {resultsForSelectedTest.length > 0 ? (
-                                resultsForSelectedTest.map(result => (
+                                resultsForSelectedTest.map((result:any) => (
                                     <TableRow key={result.id}>
                                         {isTeacherOrAdmin && <TableCell className="font-medium">{result.studentName}</TableCell>}
                                         <TableCell className="text-right">{result.score} / {selectedTestForResults.totalMarks}</TableCell>

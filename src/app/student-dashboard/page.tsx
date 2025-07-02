@@ -1,3 +1,4 @@
+
 'use client'
 
 import * as React from 'react'
@@ -21,15 +22,15 @@ import { studentData, initialTestResultsData, initialTestsData, usersData, initi
 import { format } from "date-fns"
 
 export default function StudentDashboard() {
-  const { summary, performance } = studentData;
+  const { summary } = studentData;
   const [currentUser, setCurrentUser] = React.useState<{type: string, id: string, name: string, grade?: string, medium?: string} | null>(null);
-  
-  const [schedule, setSchedule] = React.useState(initialScheduleData);
+  const [todaysSchedule, setTodaysSchedule] = React.useState<any[]>([]);
 
   React.useEffect(() => {
+    let userData: any;
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      const userData = JSON.parse(storedUser);
+      userData = JSON.parse(storedUser);
       const studentDetails = usersData.students.find(s => s.id === userData.id);
       if(studentDetails) {
         setCurrentUser({...userData, grade: studentDetails.grade, medium: studentDetails.medium });
@@ -39,13 +40,19 @@ export default function StudentDashboard() {
     }
     
     const savedSchedule = localStorage.getItem('shiksha-schedule');
-    if (savedSchedule) {
-      setSchedule(JSON.parse(savedSchedule));
+    const schedule = savedSchedule ? JSON.parse(savedSchedule) : initialScheduleData;
+
+    if (userData) {
+      const studentDetails = usersData.students.find(s => s.id === userData.id);
+      const today = format(new Date(), 'eeee'); // This is fine inside useEffect
+      const batchKey = studentDetails ? `${studentDetails.grade}-${studentDetails.medium}` : '';
+      const scheduleForToday = schedule[batchKey as keyof typeof schedule]?.[today as keyof typeof schedule[keyof typeof schedule]] || [];
+      setTodaysSchedule(scheduleForToday.sort((a:any,b:any) => a.time.localeCompare(b.time)));
     }
   }, []);
 
-  const studentResults = initialTestResultsData
-    .filter(r => r.studentId === currentUser?.id)
+  const studentResults = (currentUser?.id ? initialTestResultsData
+    .filter(r => r.studentId === currentUser.id) : [])
     .map(result => {
         const test = initialTestsData.find(t => t.id === result.testId);
         return {
@@ -72,10 +79,6 @@ export default function StudentDashboard() {
     const minuteString = m < 10 ? '0' + m : String(m);
     return `${hour12}:${minuteString} ${ampm}`;
   };
-  
-  const today = format(new Date(), 'eeee'); // "Monday", "Tuesday", etc.
-  const batchKey = currentUser ? `${currentUser.grade}-${currentUser.medium}` : '';
-  const todaysSchedule = schedule[batchKey as keyof typeof schedule]?.[today as keyof typeof schedule[keyof typeof schedule]] || [];
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -144,7 +147,7 @@ export default function StudentDashboard() {
 
         <Card className="lg:col-span-3">
             <CardHeader>
-                <CardTitle>Welcome back, {summary.studentName}!</CardTitle>
+                <CardTitle>Welcome back, {currentUser?.name || 'Student'}!</CardTitle>
                 <CardDescription>Here's a quick summary of your progress.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6 md:grid-cols-3">
