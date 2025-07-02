@@ -180,3 +180,18 @@ export const usersData = {
     { id: 'TCH-003', name: 'Ms. Joshi', subject: 'English', email: 'joshi@example.com', username: 'joshi@example.com', password: 'password123' },
   ]
 };
+
+export const initialAnnouncementsData: { id: string; title: string; message: string; date: string }[] = [
+  {
+    id: 'AN-1',
+    title: 'Holiday Declared',
+    message: 'School will be closed tomorrow on account of a regional festival.',
+    date: subDays(today, 1).toISOString(),
+  },
+  {
+    id: 'AN-2',
+    title: 'Annual Sports Day',
+    message: 'The annual sports day will be held next Friday. All students are requested to participate.',
+    date: subDays(today, 3).toISOString(),
+  }
+];

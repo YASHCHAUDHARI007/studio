@@ -42,6 +42,15 @@ import {
 } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import { Badge } from './ui/badge';
+import { initialAnnouncementsData } from '@/lib/data';
+import { formatDistanceToNow } from 'date-fns';
+
+type Announcement = {
+  id: string;
+  title: string;
+  message: string;
+  date: string;
+};
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -65,11 +74,30 @@ function AppHeader() {
   const { toggleSidebar } = useSidebar();
   const [theme, setTheme] = React.useState('light');
   const router = useRouter();
+  const [announcements, setAnnouncements] = React.useState<Announcement[]>([]);
+
+  const fetchAnnouncements = React.useCallback(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('shiksha-announcements');
+      const data = saved ? JSON.parse(saved) : initialAnnouncementsData;
+      setAnnouncements(data);
+    }
+  }, []);
 
   React.useEffect(() => {
+    fetchAnnouncements();
     const isDarkMode = document.documentElement.classList.contains('dark');
     setTheme(isDarkMode ? 'dark' : 'light');
-  }, []);
+
+    const handleStorageChange = () => {
+      fetchAnnouncements();
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [fetchAnnouncements]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -78,7 +106,9 @@ function AppHeader() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('user');
+    if (typeof window !== 'undefined') {
+        localStorage.clear();
+    }
     router.push('/login');
   };
 
@@ -106,11 +136,37 @@ function AppHeader() {
           <Moon className="absolute size-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           <span className="sr-only">Toggle theme</span>
         </Button>
-        <Button variant="ghost" size="icon" className="relative">
-            <Bell className="size-5" />
-            <Badge className="absolute -right-1 -top-1 h-4 w-4 justify-center p-0 text-xs" variant="destructive">3</Badge>
-            <span className="sr-only">Notifications</span>
-        </Button>
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="relative">
+              <Bell className="size-5" />
+              {announcements.length > 0 && (
+                <Badge className="absolute -right-1 -top-1 h-4 w-4 justify-center p-0 text-xs" variant="destructive">
+                  {announcements.length}
+                </Badge>
+              )}
+              <span className="sr-only">Notifications</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-80 sm:w-96">
+            <DropdownMenuLabel>Announcements</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {announcements.length > 0 ? (
+              <div className="max-h-80 overflow-y-auto">
+                {announcements.map(ann => (
+                  <DropdownMenuItem key={ann.id} className="flex flex-col items-start gap-1 whitespace-normal p-2">
+                    <p className="font-semibold">{ann.title}</p>
+                    <p className="text-sm text-muted-foreground">{ann.message}</p>
+                    <p className="text-xs text-muted-foreground self-end">{formatDistanceToNow(new Date(ann.date), { addSuffix: true })}</p>
+                  </DropdownMenuItem>
+                ))}
+              </div>
+            ) : (
+              <DropdownMenuItem className="justify-center text-sm text-muted-foreground">No new announcements</DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -143,11 +199,13 @@ function MainSidebar() {
     const [userType, setUserType] = React.useState<string | null>(null);
 
     React.useEffect(() => {
+      if (typeof window !== 'undefined') {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
             const userData = JSON.parse(storedUser);
             setUserType(userData.type);
         }
+      }
     }, [pathname]);
 
     // Choose nav items based on user type
