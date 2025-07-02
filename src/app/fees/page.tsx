@@ -287,7 +287,7 @@ export default function FeesPage() {
                   {feeData.paymentHistory.length > 0 ? (
                     feeData.paymentHistory.map((payment) => (
                       <TableRow key={payment.id}>
-                        <TableCell className="font-medium">{format(new Date(payment.date), 'dd MMM, yyyy')}</TableCell>
+                        <TableCell className="font-medium">{format(new Date(`${payment.date}T00:00:00`), 'dd MMM, yyyy')}</TableCell>
                         <TableCell>{payment.notes}</TableCell>
                         <TableCell className="text-right">{formatCurrency(payment.amount)}</TableCell>
                       </TableRow>

@@ -1,6 +1,6 @@
 import { subDays, format } from 'date-fns';
 
-const today = new Date();
+const today = new Date('2024-07-26T12:00:00Z');
 
 export const studentData = {
   summary: {

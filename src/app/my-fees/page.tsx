@@ -151,7 +151,7 @@ export default function MyFeesPage() {
               {paymentHistory.length > 0 ? (
                 paymentHistory.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell className="font-medium">{format(new Date(item.date), 'dd MMM, yyyy')}</TableCell>
+                    <TableCell className="font-medium">{format(new Date(`${item.date}T00:00:00`), 'dd MMM, yyyy')}</TableCell>
                     <TableCell>{item.notes}</TableCell>
                     <TableCell className="text-right">{formatCurrency(item.amount)}</TableCell>
                   </TableRow>

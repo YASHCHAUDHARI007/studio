@@ -55,7 +55,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useForm, useFieldArray } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { format, parseISO } from "date-fns"
+import { format } from "date-fns"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -158,7 +158,7 @@ export default function TestsPage() {
     if (test) {
         scheduleTestForm.reset({
             ...test,
-            date: parseISO(test.date),
+            date: new Date(`${test.date}T00:00:00`),
         });
     } else {
         scheduleTestForm.reset({ testName: '', subject: '', grade: '', medium: '', date: new Date(), time: '', totalMarks: 100 });
@@ -354,7 +354,7 @@ export default function TestsPage() {
                       <TableCell className="font-medium">{test.testName}</TableCell>
                       <TableCell>{test.subject}</TableCell>
                       <TableCell>{test.grade} ({test.medium})</TableCell>
-                      <TableCell>{format(new Date(test.date), 'dd MMM, yyyy')} @ {formatTime12Hour(test.time)}</TableCell>
+                      <TableCell>{format(new Date(`${test.date}T00:00:00`), 'dd MMM, yyyy')} @ {formatTime12Hour(test.time)}</TableCell>
                       <TableCell>{test.totalMarks}</TableCell>
                       <TableCell>
                         <Badge variant={test.status === 'Completed' ? 'secondary' : 'default'}>{test.status}</Badge>

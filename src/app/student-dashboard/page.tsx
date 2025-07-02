@@ -52,7 +52,7 @@ export default function StudentDashboard() {
             ...result,
             testName: test?.testName || 'N/A',
             subject: test?.subject || 'N/A',
-            date: test ? format(new Date(test.date), 'dd MMM, yyyy') : 'N/A',
+            date: test ? format(new Date(`${test.date}T00:00:00`), 'dd MMM, yyyy') : 'N/A',
             totalMarks: test?.totalMarks || 100,
         };
     })
@@ -128,7 +128,7 @@ export default function StudentDashboard() {
                     <TableBody>
                     {upcomingTests.map((test) => (
                         <TableRow key={test.id}>
-                            <TableCell>{format(new Date(test.date), 'dd MMM, yyyy')}</TableCell>
+                            <TableCell>{format(new Date(`${test.date}T00:00:00`), 'dd MMM, yyyy')}</TableCell>
 
                             <TableCell className="font-medium">{test.testName}</TableCell>
                             <TableCell>{test.subject}</TableCell>
