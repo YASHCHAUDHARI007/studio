@@ -17,30 +17,17 @@ export const metadata: Metadata = {
 
 export default function NotificationsPage() {
   return (
-    <Tabs defaultValue="personalized" className="w-full">
+    <Tabs defaultValue="announcements" className="w-full">
       <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="personalized">
-          <MessageSquareText className="mr-2 h-4 w-4" />
-          Personalized Message
-        </TabsTrigger>
         <TabsTrigger value="announcements">
           <Megaphone className="mr-2 h-4 w-4" />
           Common Announcement
         </TabsTrigger>
+        <TabsTrigger value="personalized">
+          <MessageSquareText className="mr-2 h-4 w-4" />
+          Personalized Message
+        </TabsTrigger>
       </TabsList>
-      <TabsContent value="personalized">
-        <Card className="mt-2">
-            <CardHeader>
-                <CardTitle>Personalized Notification Tool</CardTitle>
-                <CardDescription>
-                    Use our AI assistant to generate personalized, supportive messages for parents based on student data.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <NotificationForm />
-            </CardContent>
-        </Card>
-      </TabsContent>
       <TabsContent value="announcements">
         <Card className="mt-2">
             <CardHeader>
@@ -51,6 +38,19 @@ export default function NotificationsPage() {
             </CardHeader>
             <CardContent>
                 <AnnouncementForm />
+            </CardContent>
+        </Card>
+      </TabsContent>
+      <TabsContent value="personalized">
+        <Card className="mt-2">
+            <CardHeader>
+                <CardTitle>Personalized Notification Tool</CardTitle>
+                <CardDescription>
+                    Use our AI assistant to generate personalized, supportive messages for parents based on student data.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <NotificationForm />
             </CardContent>
         </Card>
       </TabsContent>
