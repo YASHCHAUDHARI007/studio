@@ -64,6 +64,64 @@ export default function StudentDashboard() {
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+            <CardHeader>
+            <CardTitle>Today's Schedule</CardTitle>
+            <CardDescription>Your classes and activities for today.</CardDescription>
+            </CardHeader>
+            <CardContent>
+            <Table>
+                <TableHeader>
+                <TableRow>
+                    <TableHead>Time</TableHead>
+                    <TableHead>Subject</TableHead>
+                </TableRow>
+                </TableHeader>
+                <TableBody>
+                {schedule.map((item) => (
+                    <TableRow key={item.time}>
+                    <TableCell className="font-medium">{item.time}</TableCell>
+                    <TableCell>
+                        <Badge variant={item.type === 'class' ? 'default' : 'secondary'}>{item.subject}</Badge>
+                    </TableCell>
+                    </TableRow>
+                ))}
+                </TableBody>
+            </Table>
+            </CardContent>
+        </Card>
+
+        <Card>
+            <CardHeader>
+            <CardTitle>Upcoming Tests</CardTitle>
+            <CardDescription>Tests you need to prepare for.</CardDescription>
+            </CardHeader>
+            <CardContent>
+            {upcomingTests.length > 0 ? (
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Test</TableHead>
+                            <TableHead>Subject</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                    {upcomingTests.map((test) => (
+                        <TableRow key={test.id}>
+                            <TableCell>{format(new Date(test.date), 'dd MMM, yyyy')}</TableCell>
+                            <TableCell className="font-medium">{test.testName}</TableCell>
+                            <TableCell>{test.subject}</TableCell>
+                        </TableRow>
+                    ))}
+                    </TableBody>
+                </Table>
+            ) : (
+                <p className="text-sm text-muted-foreground">No upcoming tests scheduled.</p>
+            )}
+            </CardContent>
+        </Card>
+
         <Card className="lg:col-span-3">
             <CardHeader>
                 <CardTitle>Welcome back, {summary.studentName}!</CardTitle>
@@ -84,97 +142,39 @@ export default function StudentDashboard() {
                 </div>
             </CardContent>
         </Card>
-      
-      <Card className="lg:col-span-2">
-        <CardHeader>
-          <CardTitle>Today's Schedule</CardTitle>
-          <CardDescription>Your classes and activities for today.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Time</TableHead>
-                <TableHead>Subject</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {schedule.map((item) => (
-                <TableRow key={item.time}>
-                  <TableCell className="font-medium">{item.time}</TableCell>
-                  <TableCell>
-                    <Badge variant={item.type === 'class' ? 'default' : 'secondary'}>{item.subject}</Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Upcoming Tests</CardTitle>
-           <CardDescription>Tests you need to prepare for.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {upcomingTests.length > 0 ? (
+        <Card className="lg:col-span-3">
+            <CardHeader>
+            <CardTitle>Recent Test Results</CardTitle>
+            <CardDescription>A summary of your most recent test scores.</CardDescription>
+            </CardHeader>
+            <CardContent>
             <Table>
                 <TableHeader>
-                    <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Test</TableHead>
-                        <TableHead>Subject</TableHead>
-                    </TableRow>
+                <TableRow>
+                    <TableHead>Subject</TableHead>
+                    <TableHead>Test Name</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="text-right">Score</TableHead>
+                </TableRow>
                 </TableHeader>
                 <TableBody>
-                {upcomingTests.map((test) => (
-                    <TableRow key={test.id}>
-                        <TableCell>{format(new Date(test.date), 'dd MMM, yyyy')}</TableCell>
-                        <TableCell className="font-medium">{test.testName}</TableCell>
-                        <TableCell>{test.subject}</TableCell>
+                {studentResults.map((result) => (
+                    <TableRow key={result.id}>
+                    <TableCell className="font-medium">{result.subject}</TableCell>
+                    <TableCell>{result.testName}</TableCell>
+                    <TableCell>{result.date}</TableCell>
+                    <TableCell className="text-right">
+                        <Badge variant={result.score/result.totalMarks > 0.85 ? "default" : result.score/result.totalMarks > 0.60 ? "secondary" : "destructive"}>
+                        {result.score} / {result.totalMarks} ({((result.score / result.totalMarks) * 100).toFixed(0)}%)
+                        </Badge>
+                    </TableCell>
                     </TableRow>
                 ))}
                 </TableBody>
             </Table>
-          ) : (
-             <p className="text-sm text-muted-foreground">No upcoming tests scheduled.</p>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="lg:col-span-3">
-        <CardHeader>
-          <CardTitle>Recent Test Results</CardTitle>
-          <CardDescription>A summary of your most recent test scores.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Subject</TableHead>
-                <TableHead>Test Name</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Score</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {studentResults.map((result) => (
-                <TableRow key={result.id}>
-                  <TableCell className="font-medium">{result.subject}</TableCell>
-                  <TableCell>{result.testName}</TableCell>
-                  <TableCell>{result.date}</TableCell>
-                  <TableCell className="text-right">
-                    <Badge variant={result.score/result.totalMarks > 0.85 ? "default" : result.score/result.totalMarks > 0.60 ? "secondary" : "destructive"}>
-                      {result.score} / {result.totalMarks} ({((result.score / result.totalMarks) * 100).toFixed(0)}%)
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            </CardContent>
+        </Card>
     </div>
   )
 }
