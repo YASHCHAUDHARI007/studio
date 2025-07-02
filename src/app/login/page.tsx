@@ -119,14 +119,12 @@ export default function LoginPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    <TableRow>
-                      <TableCell className="font-mono">9876543210</TableCell>
-                      <TableCell className="font-mono">rohan27072007</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-mono">9876543211</TableCell>
-                      <TableCell className="font-mono">priya15052007</TableCell>
-                    </TableRow>
+                    {usersData.students.slice(0, 2).map((student) => (
+                      <TableRow key={student.id}>
+                        <TableCell className="font-mono">{student.username}</TableCell>
+                        <TableCell className="font-mono">{student.password}</TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               </AccordionContent>
@@ -146,10 +144,12 @@ export default function LoginPage() {
                       <TableCell className="font-mono">superadmin</TableCell>
                       <TableCell className="font-mono">superpassword</TableCell>
                     </TableRow>
-                    <TableRow>
-                      <TableCell className="font-mono">davis@example.com</TableCell>
-                      <TableCell className="font-mono">password123</TableCell>
-                    </TableRow>
+                    {usersData.teachers.slice(0, 1).map((teacher) => (
+                      <TableRow key={teacher.id}>
+                        <TableCell className="font-mono">{teacher.username}</TableCell>
+                        <TableCell className="font-mono">{teacher.password}</TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               </AccordionContent>
