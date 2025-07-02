@@ -30,12 +30,11 @@ export default function MyFeesPage() {
   const { summary, monthlyBreakdown } = feeData
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
+    const formattedAmount = new Intl.NumberFormat('en-IN', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(amount)
+    }).format(amount);
+    return `Rs. ${formattedAmount}`;
   }
 
   const getBadgeVariant = (status: string) => {
