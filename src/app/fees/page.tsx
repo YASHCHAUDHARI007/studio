@@ -1,6 +1,10 @@
 'use client'
 
 import * as React from 'react'
+import { z } from "zod"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { format } from "date-fns"
 import {
   Card,
   CardContent,
@@ -18,8 +22,7 @@ import {
 } from "@/components/ui/table"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { AlertCircle, FileDown, Send } from "lucide-react"
+import { AlertCircle, FileDown, Send, PlusCircle, Calendar as CalendarIcon } from "lucide-react"
 import {
   Select,
   SelectContent,
@@ -27,54 +30,88 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
 import { initialAllStudentsFeeData, usersData } from "@/lib/data"
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
+import { cn } from '@/lib/utils'
+
+const paymentSchema = z.object({
+  amount: z.coerce.number().min(1, 'Amount must be greater than 0'),
+  date: z.date({ required_error: "Payment date is required." }),
+  notes: z.string().optional(),
+})
 
 export default function FeesPage() {
   const { toast } = useToast()
   const [selectedStudentId, setSelectedStudentId] = React.useState<string | null>(null)
   const [studentsFeeData, setStudentsFeeData] = React.useState(initialAllStudentsFeeData)
+  const [isRecordPaymentOpen, setIsRecordPaymentOpen] = React.useState(false)
 
   const feeData = selectedStudentId ? studentsFeeData[selectedStudentId as keyof typeof studentsFeeData] : null
 
+  const paymentForm = useForm<z.infer<typeof paymentSchema>>({
+    resolver: zodResolver(paymentSchema),
+    defaultValues: { amount: undefined, date: new Date(), notes: '' },
+  })
+
   const formatCurrency = (amount: number) => {
     const formattedAmount = new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
-    return `Rs. ${formattedAmount}`;
+    return formattedAmount.replace(/\s/g, '');
   }
 
-  const getBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'Paid':
-        return 'default';
-      case 'Due':
-        return 'destructive';
-      default:
-        return 'secondary';
-    }
-  }
-
-  const handleMarkAsPaid = (month: string) => {
+  function handleRecordPayment(data: z.infer<typeof paymentSchema>) {
     if (!selectedStudentId || !feeData) return
 
     setStudentsFeeData(prevData => {
-      const updatedStudentData = { ...prevData[selectedStudentId as keyof typeof prevData] }
-      const breakdown = updatedStudentData.monthlyBreakdown.map(item => {
-        if (item.month === month && item.status === 'Due') {
-          return { ...item, paid: item.total, status: 'Paid' }
+      const currentStudentData = prevData[selectedStudentId as keyof typeof prevData]
+      
+      const newPayment = {
+        id: `PAY-${Math.random().toString(36).substring(2, 9)}`,
+        date: format(data.date, 'yyyy-MM-dd'),
+        amount: data.amount,
+        notes: data.notes || 'Installment payment',
+      }
+
+      const updatedHistory = [...currentStudentData.paymentHistory, newPayment].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      const totalPaid = updatedHistory.reduce((acc, p) => acc + p.amount, 0)
+      const totalDue = currentStudentData.summary.total - totalPaid
+
+      const updatedStudentData = {
+        ...currentStudentData,
+        paymentHistory: updatedHistory,
+        summary: {
+          ...currentStudentData.summary,
+          paid: totalPaid,
+          due: totalDue,
         }
-        return item
-      })
-
-      const paidAmount = breakdown.reduce((acc, item) => acc + item.paid, 0)
-      const dueAmount = updatedStudentData.summary.total - paidAmount
-
-      updatedStudentData.monthlyBreakdown = breakdown
-      updatedStudentData.summary.paid = paidAmount
-      updatedStudentData.summary.due = dueAmount
+      }
 
       return {
         ...prevData,
@@ -82,8 +119,11 @@ export default function FeesPage() {
       }
     })
 
-    toast({ title: "Payment Updated", description: `Marked ${month} as paid for ${feeData.name}.` })
+    toast({ title: "Payment Recorded", description: `Recorded a payment of ${formatCurrency(data.amount)} for ${feeData.name}.` })
+    setIsRecordPaymentOpen(false)
+    paymentForm.reset({ amount: undefined, date: new Date(), notes: '' })
   }
+
 
   const handleSendReminder = () => {
     if (!feeData) return
@@ -164,53 +204,83 @@ export default function FeesPage() {
           )}
 
           <Card>
-            <CardHeader className="flex-row items-center justify-between">
+            <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle>Monthly Fee Breakdown</CardTitle>
+                <CardTitle>Payment History</CardTitle>
                 <CardDescription>
-                  A month-by-month payment record for {feeData.name}.
+                  A record of payments for {feeData.name}.
                 </CardDescription>
               </div>
-              <Button variant="outline">
-                <FileDown className="mr-2 h-4 w-4" />
-                Download Report
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline">
+                  <FileDown className="mr-2 h-4 w-4" />
+                  Download Report
+                </Button>
+                <Dialog open={isRecordPaymentOpen} onOpenChange={setIsRecordPaymentOpen}>
+                  <DialogTrigger asChild>
+                    <Button><PlusCircle className="mr-2 h-4 w-4" /> Record Payment</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Record a New Payment</DialogTitle>
+                      <DialogDescription>Enter the details for the payment received from {feeData.name}.</DialogDescription>
+                    </DialogHeader>
+                    <Form {...paymentForm}>
+                      <form onSubmit={paymentForm.handleSubmit(handleRecordPayment)} className="space-y-4 py-4">
+                        <FormField control={paymentForm.control} name="amount" render={({ field }) => (
+                          <FormItem><FormLabel>Amount Received</FormLabel><FormControl><Input type="number" placeholder="Enter amount" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={paymentForm.control} name="date" render={({ field }) => (
+                          <FormItem className="flex flex-col"><FormLabel>Payment Date</FormLabel>
+                          <Popover><PopoverTrigger asChild><FormControl>
+                              <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
+                              {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                          </FormControl></PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                          </PopoverContent></Popover><FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={paymentForm.control} name="notes" render={({ field }) => (
+                          <FormItem><FormLabel>Notes (Optional)</FormLabel><FormControl><Textarea placeholder="e.g., Second installment" {...field} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <DialogFooter>
+                          <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
+                          <Button type="submit">Save Payment</Button>
+                        </DialogFooter>
+                      </form>
+                    </Form>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Month</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                    <TableHead className="text-right">Paid</TableHead>
-                    <TableHead className="text-right">Due</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-center">Action</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Notes</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {feeData.monthlyBreakdown.map((item) => (
-                    <TableRow key={item.month}>
-                      <TableCell className="font-medium">{item.month}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(item.total)}</TableCell>
-                      <TableCell className="text-right text-primary">{formatCurrency(item.paid)}</TableCell>
-                      <TableCell className="text-right text-destructive">{formatCurrency(item.total - item.paid)}</TableCell>
-                      <TableCell>
-                        <Badge variant={getBadgeVariant(item.status)}>
-                          {item.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {item.status === 'Due' ? (
-                          <Button size="sm" variant="outline" onClick={() => handleMarkAsPaid(item.month)}>Mark as Paid</Button>
-                        ) : item.status === 'Paid' ? (
-                          <Button size="sm" variant="ghost" disabled>Paid</Button>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">-</span>
-                        )}
+                  {feeData.paymentHistory.length > 0 ? (
+                    feeData.paymentHistory.map((payment) => (
+                      <TableRow key={payment.id}>
+                        <TableCell className="font-medium">{format(new Date(payment.date), 'dd MMM, yyyy')}</TableCell>
+                        <TableCell>{payment.notes}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(payment.amount)}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
+                        No payments recorded for this student.
                       </TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
             </CardContent>

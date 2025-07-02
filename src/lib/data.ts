@@ -135,10 +135,9 @@ export const initialStudentFeeData = {
     due: 25000,
     dueDate: '31 Aug, 2024',
   },
-  monthlyBreakdown: [
-    { month: 'August 2024', invoiceId: 'INV-2024004', total: 25000, paid: 0, status: 'Due', dueDate: '31 Aug, 2024' },
-    { month: 'July 2024', invoiceId: 'INV-2024003', total: 25000, paid: 25000, status: 'Paid', dueDate: '30 Jul, 2024' },
-    { month: 'June 2024', invoiceId: 'INV-2024002', total: 25000, paid: 25000, status: 'Paid', dueDate: '15 Jun, 2024' },
+  paymentHistory: [
+    { id: 'PAY-001', date: '2024-06-15', amount: 25000, notes: 'First installment' },
+    { id: 'PAY-002', date: '2024-07-30', amount: 25000, notes: 'Second installment' },
   ],
 };
 
@@ -146,28 +145,25 @@ export const initialAllStudentsFeeData = {
   'STU-001': {
     name: 'Rohan Sharma',
     summary: { total: 75000, paid: 50000, due: 25000, dueDate: '31 Aug, 2024' },
-    monthlyBreakdown: [
-      { month: 'August 2024', total: 25000, paid: 0, status: 'Due' },
-      { month: 'July 2024', total: 25000, paid: 25000, status: 'Paid' },
-      { month: 'June 2024', total: 25000, paid: 25000, status: 'Paid' },
+    paymentHistory: [
+      { id: 'PAY-001', date: '2024-06-15', amount: 25000, notes: 'First installment' },
+      { id: 'PAY-002', date: '2024-07-30', amount: 25000, notes: 'Second installment' },
     ],
   },
   'STU-002': {
     name: 'Priya Singh',
     summary: { total: 75000, paid: 75000, due: 0, dueDate: 'N/A' },
-    monthlyBreakdown: [
-      { month: 'August 2024', total: 25000, paid: 25000, status: 'Paid' },
-      { month: 'July 2024', total: 25000, paid: 25000, status: 'Paid' },
-      { month: 'June 2024', total: 25000, paid: 25000, status: 'Paid' },
+    paymentHistory: [
+      { id: 'PAY-003', date: '2024-06-15', amount: 25000, notes: 'First installment' },
+      { id: 'PAY-004', date: '2024-07-30', amount: 25000, notes: 'Second installment' },
+      { id: 'PAY-005', date: '2024-08-10', amount: 25000, notes: 'Final installment' },
     ],
   },
   'STU-003': {
     name: 'Amit Patel',
-    summary: { total: 75000, paid: 25000, due: 50000, dueDate: '31 Jul, 2024' },
-    monthlyBreakdown: [
-      { month: 'August 2024', total: 25000, paid: 0, status: 'Due' },
-      { month: 'July 2024', total: 25000, paid: 0, status: 'Due' },
-      { month: 'June 2024', total: 25000, paid: 25000, status: 'Paid' },
+    summary: { total: 75000, paid: 25000, due: 50000, dueDate: '31 Aug, 2024' },
+    paymentHistory: [
+      { id: 'PAY-006', date: '2024-06-20', amount: 25000, notes: 'First installment' },
     ],
   },
 };
