@@ -42,7 +42,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { usersData } from "@/lib/data"
+import { usersData, initialAllStudentsFeeData } from "@/lib/data"
 import { CalendarIcon, UserPlus } from 'lucide-react'
 import {
   Select,
@@ -69,16 +69,28 @@ const studentSchema = z.object({
   dateJoined: z.date({
     required_error: "Date joined is required.",
   }),
+  totalAnnualFees: z.coerce.number().min(1, 'Total fees must be greater than 0'),
 })
 
 type StudentFormValues = z.infer<typeof studentSchema>
 
 export function StudentManagement() {
-  const [students, setStudents] = React.useState(usersData.students)
+  const [students, setStudents] = React.useState(() => {
+    if (typeof window === 'undefined') return usersData.students;
+    const saved = localStorage.getItem('shiksha-students');
+    return saved ? JSON.parse(saved) : usersData.students;
+  });
+
   const [isAddStudentDialogOpen, setIsAddStudentDialogOpen] = React.useState(false)
   const [showCredentialsDialog, setShowCredentialsDialog] = React.useState(false)
   const [generatedCredentials, setGeneratedCredentials] = React.useState({ username: '', password: '' })
   const { toast } = useToast()
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('shiksha-students', JSON.stringify(students));
+    }
+  }, [students]);
 
   const form = useForm<StudentFormValues>({
     resolver: zodResolver(studentSchema),
@@ -91,6 +103,7 @@ export function StudentManagement() {
       parentContact: '',
       dateOfBirth: undefined,
       dateJoined: undefined,
+      totalAnnualFees: undefined,
     },
   })
 
@@ -110,8 +123,29 @@ export function StudentManagement() {
       dateJoined: format(data.dateJoined, 'yyyy-MM-dd'),
       username: username,
       password: password,
+      totalAnnualFees: data.totalAnnualFees,
     }
+
     setStudents([...students, newStudent])
+    
+    // Also update fee data in local storage
+    if (typeof window !== 'undefined') {
+      const savedFees = localStorage.getItem('shiksha-fees');
+      const currentFees = savedFees ? JSON.parse(savedFees) : initialAllStudentsFeeData;
+      const newFeeRecord = {
+           name: newStudent.name,
+           summary: {
+              total: newStudent.totalAnnualFees,
+              paid: 0,
+              due: newStudent.totalAnnualFees,
+              dueDate: 'N/A', // Or some logic to set this
+           },
+           paymentHistory: [],
+      };
+      const updatedFees = { ...currentFees, [newStudent.id]: newFeeRecord };
+      localStorage.setItem('shiksha-fees', JSON.stringify(updatedFees));
+    }
+
     setGeneratedCredentials({ username, password });
     toast({
       title: 'Student Added',
@@ -334,6 +368,19 @@ export function StudentManagement() {
                       <FormLabel>Parent's Contact (Username)</FormLabel>
                       <FormControl>
                         <Input placeholder="e.g., 9876543210" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="totalAnnualFees"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Total Annual Fees</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="e.g., 75000" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

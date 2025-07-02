@@ -66,8 +66,24 @@ const paymentSchema = z.object({
 export default function FeesPage() {
   const { toast } = useToast()
   const [selectedStudentId, setSelectedStudentId] = React.useState<string | null>(null)
-  const [studentsFeeData, setStudentsFeeData] = React.useState(initialAllStudentsFeeData)
-  const [isRecordPaymentOpen, setIsRecordPaymentOpen] = React.useState(false)
+  
+  const [students, setStudents] = React.useState(() => {
+    if (typeof window === 'undefined') return usersData.students;
+    const saved = localStorage.getItem('shiksha-students');
+    return saved ? JSON.parse(saved) : usersData.students;
+  });
+  
+  const [studentsFeeData, setStudentsFeeData] = React.useState(() => {
+    if (typeof window === 'undefined') return initialAllStudentsFeeData;
+    const saved = localStorage.getItem('shiksha-fees');
+    return saved ? JSON.parse(saved) : initialAllStudentsFeeData;
+  });
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('shiksha-fees', JSON.stringify(studentsFeeData));
+    }
+  }, [studentsFeeData]);
 
   const feeData = selectedStudentId ? studentsFeeData[selectedStudentId as keyof typeof studentsFeeData] : null
 
@@ -83,7 +99,7 @@ export default function FeesPage() {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
-    return formattedAmount.replace(/\s/g, '');
+    return formattedAmount.replace(/\s/g, '').replace('₹', 'Rs.');
   }
 
   function handleRecordPayment(data: z.infer<typeof paymentSchema>) {
@@ -147,7 +163,7 @@ export default function FeesPage() {
                 <SelectValue placeholder="Select a student..." />
               </SelectTrigger>
               <SelectContent>
-                {usersData.students.map((student) => (
+                {students.map((student) => (
                   <SelectItem key={student.id} value={student.id}>
                     {student.name} ({student.id})
                   </SelectItem>

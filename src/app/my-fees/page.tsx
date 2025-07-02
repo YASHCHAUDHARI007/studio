@@ -17,13 +17,43 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle } from "lucide-react"
-import { initialStudentFeeData } from "@/lib/data"
+import { AlertCircle, Loader2 } from "lucide-react"
+import { initialAllStudentsFeeData } from "@/lib/data"
 import { format } from 'date-fns'
 
+type FeeData = {
+  summary: {
+    total: number;
+    paid: number;
+    due: number;
+    dueDate: string;
+  };
+  paymentHistory: {
+    id: string;
+    date: string;
+    amount: number;
+    notes: string;
+  }[];
+};
+
 export default function MyFeesPage() {
-  const [feeData] = React.useState(initialStudentFeeData)
-  const { summary, paymentHistory } = feeData
+  const [feeData, setFeeData] = React.useState<FeeData | null>(null)
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+        const storedUser = localStorage.getItem('user');
+        const savedFees = localStorage.getItem('shiksha-fees');
+        
+        const allFees = savedFees ? JSON.parse(savedFees) : initialAllStudentsFeeData;
+
+        if (storedUser) {
+            const userData = JSON.parse(storedUser);
+            setFeeData(allFees[userData.id]);
+        }
+        setIsLoading(false);
+    }
+  }, []);
 
   const formatCurrency = (amount: number) => {
     const formattedAmount = new Intl.NumberFormat('en-IN', {
@@ -32,8 +62,29 @@ export default function MyFeesPage() {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
-    return formattedAmount.replace(/\s/g, '');
+    return formattedAmount.replace(/\s/g, '').replace('₹', 'Rs.');
   }
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-48">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (!feeData) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Fee Details Not Found</CardTitle>
+          <CardDescription>We could not find any fee records for your account.</CardDescription>
+        </CardHeader>
+      </Card>
+    )
+  }
+
+  const { summary, paymentHistory } = feeData
 
   return (
     <div className="space-y-6">

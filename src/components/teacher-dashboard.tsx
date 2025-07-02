@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import {
   Card,
   CardContent,
@@ -21,8 +22,16 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
 export function TeacherDashboard() {
-  // For a real app, you'd filter students assigned to this specific teacher
-  const assignedStudents = usersData.students;
+  const [assignedStudents, setAssignedStudents] = React.useState(usersData.students);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedStudents = localStorage.getItem('shiksha-students');
+      if (savedStudents) {
+        setAssignedStudents(JSON.parse(savedStudents));
+      }
+    }
+  }, []);
 
   return (
     <div className="space-y-6">

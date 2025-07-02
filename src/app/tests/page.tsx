@@ -76,6 +76,13 @@ type Test = z.infer<typeof scheduleTestSchema> & { id: string; status: 'Upcoming
 export default function TestsPage() {
   const { toast } = useToast()
   const [currentUser, setCurrentUser] = React.useState<{type: string; id?: string; name?: string; grade?: string; medium?: string;} | null>(null);
+  
+  const [allStudents, setAllStudents] = React.useState(() => {
+    if (typeof window === 'undefined') return usersData.students;
+    const saved = localStorage.getItem('shiksha-students');
+    return saved ? JSON.parse(saved) : usersData.students;
+  });
+
   const [tests, setTests] = React.useState(initialTestsData)
   const [testResults, setTestResults] = React.useState(initialTestResultsData)
   const [isScheduleTestOpen, setIsScheduleTestOpen] = React.useState(false)
@@ -101,7 +108,7 @@ export default function TestsPage() {
     if (storedUser) {
         const userData = JSON.parse(storedUser);
         if (userData.type === 'student') {
-            const studentDetails = usersData.students.find(s => s.id === userData.id);
+            const studentDetails = allStudents.find(s => s.id === userData.id);
             if (studentDetails) {
                 setCurrentUser({ ...userData, grade: studentDetails.grade, medium: studentDetails.medium });
             } else {
@@ -111,7 +118,7 @@ export default function TestsPage() {
             setCurrentUser(userData);
         }
     }
-  }, []);
+  }, [allStudents]);
 
   const userType = currentUser?.type;
   const isTeacherOrAdmin = userType === 'teacher' || userType === 'superadmin';
@@ -130,7 +137,7 @@ export default function TestsPage() {
   }
 
   function handleOpenEnterMarks(test: Test) {
-    const studentsOfGrade = usersData.students.filter(s => s.grade === test.grade);
+    const studentsOfGrade = allStudents.filter(s => s.grade === test.grade);
     if(studentsOfGrade.length === 0) {
       toast({
         variant: "destructive",
@@ -291,7 +298,7 @@ export default function TestsPage() {
                                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Select grade" /></SelectTrigger></FormControl>
                                     <SelectContent>
-                                      {[...new Set(usersData.students.map(s => s.grade))].sort().map(grade => (
+                                      {[...new Set(allStudents.map(s => s.grade))].sort().map(grade => (
                                          <SelectItem key={grade} value={grade}>{grade} Grade</SelectItem>
                                       ))}
                                     </SelectContent>

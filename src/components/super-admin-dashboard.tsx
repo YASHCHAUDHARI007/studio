@@ -21,17 +21,33 @@ import { initialAllStudentsFeeData, usersData } from "@/lib/data"
 import { Users, User, DollarSign } from 'lucide-react'
 
 export function SuperAdminDashboard() {
-  const { students, teachers } = usersData;
+  const [students, setStudents] = React.useState(usersData.students);
+  const [feeData, setFeeData] = React.useState(initialAllStudentsFeeData);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const savedStudents = localStorage.getItem('shiksha-students');
+    if (savedStudents) {
+      setStudents(JSON.parse(savedStudents));
+    }
+    const savedFees = localStorage.getItem('shiksha-fees');
+    if (savedFees) {
+      setFeeData(JSON.parse(savedFees));
+    }
+  }, []);
+
   const totalStudents = students.length;
-  const totalTeachers = teachers.length;
-  const totalDues = Object.values(initialAllStudentsFeeData).reduce((acc, student) => acc + student.summary.due, 0);
+  const totalTeachers = usersData.teachers.length;
+  const totalDues = Object.values(feeData).reduce((acc: number, student: any) => acc + student.summary.due, 0);
 
   const formatCurrency = (amount: number) => {
     const formattedAmount = new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
-    return `Rs. ${formattedAmount}`;
+    return formattedAmount.replace(/\s/g, '').replace('₹', 'Rs.');
   }
 
   return (
@@ -117,7 +133,7 @@ export function SuperAdminDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {teachers.map((teacher) => (
+                {usersData.teachers.map((teacher) => (
                   <TableRow key={teacher.id}>
                     <TableCell className="font-mono text-xs text-muted-foreground">{teacher.id}</TableCell>
                     <TableCell className="font-medium">{teacher.name}</TableCell>
@@ -148,7 +164,7 @@ export function SuperAdminDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {Object.values(initialAllStudentsFeeData).map((feeData) => (
+                {Object.values(feeData).map((feeData: any) => (
                   <TableRow key={feeData.name}>
                     <TableCell className="font-medium">{feeData.name}</TableCell>
                     <TableCell className="text-right">{formatCurrency(feeData.summary.total)}</TableCell>
