@@ -17,16 +17,12 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { AlertCircle } from "lucide-react"
 import { initialStudentFeeData } from "@/lib/data"
-import { Metadata } from "next"
-import { useToast } from "@/hooks/use-toast"
 
 export default function MyFeesPage() {
-  const { toast } = useToast()
-  const [feeData, setFeeData] = React.useState(initialStudentFeeData)
+  const [feeData] = React.useState(initialStudentFeeData)
   const { summary, monthlyBreakdown } = feeData
 
   const formatCurrency = (amount: number) => {
@@ -46,31 +42,6 @@ export default function MyFeesPage() {
       default:
         return 'secondary';
     }
-  }
-
-  const handlePayNow = (month: string) => {
-    setFeeData(prevData => {
-      const updatedBreakdown = prevData.monthlyBreakdown.map(item => {
-        if (item.month === month && item.status === 'Due') {
-          return { ...item, paid: item.total, status: 'Paid' }
-        }
-        return item
-      })
-
-      const paidAmount = updatedBreakdown.reduce((acc, item) => acc + item.paid, 0)
-      const dueAmount = prevData.summary.total - paidAmount
-      
-      return {
-        ...prevData,
-        monthlyBreakdown: updatedBreakdown,
-        summary: {
-          ...prevData.summary,
-          paid: paidAmount,
-          due: dueAmount,
-        }
-      }
-    })
-    toast({ title: 'Payment Successful', description: `Your payment for ${month} has been recorded.` })
   }
 
   return (
@@ -112,11 +83,8 @@ export default function MyFeesPage() {
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Payment Due</AlertTitle>
-          <AlertDescription className="flex items-center justify-between">
-            <span>
-              You have an outstanding balance of {formatCurrency(summary.due)}. Next due date is {summary.dueDate}.
-            </span>
-            <Button size="sm">Pay All Dues</Button>
+          <AlertDescription>
+              You have an outstanding balance of {formatCurrency(summary.due)}. Next due date is {summary.dueDate}. Please pay your dues at the office.
           </AlertDescription>
         </Alert>
       )}
@@ -135,7 +103,6 @@ export default function MyFeesPage() {
                 <TableHead>Month</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-center">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -147,15 +114,6 @@ export default function MyFeesPage() {
                     <Badge variant={getBadgeVariant(item.status)}>
                       {item.status}
                     </Badge>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {item.status === 'Due' ? (
-                      <Button size="sm" variant="outline" onClick={() => handlePayNow(item.month)}>Pay Now</Button>
-                    ) : item.status === 'Paid' ? (
-                      <Button size="sm" variant="ghost" disabled>Paid</Button>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">-</span>
-                    )}
                   </TableCell>
                 </TableRow>
               ))}
