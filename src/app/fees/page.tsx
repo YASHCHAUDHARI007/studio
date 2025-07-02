@@ -42,6 +42,8 @@ export default function FeesPage() {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(amount)
   }
 
@@ -60,7 +62,7 @@ export default function FeesPage() {
     if (!selectedStudentId || !feeData) return
 
     setStudentsFeeData(prevData => {
-      const updatedStudentData = { ...prevData[selectedStudentId] }
+      const updatedStudentData = { ...prevData[selectedStudentId as keyof typeof prevData] }
       const breakdown = updatedStudentData.monthlyBreakdown.map(item => {
         if (item.month === month && item.status === 'Due') {
           return { ...item, paid: item.total, status: 'Paid' }
