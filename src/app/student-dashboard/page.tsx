@@ -16,19 +16,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart"
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { Badge } from "@/components/ui/badge"
-import { studentData, initialTestResultsData, initialTestsData, usersData } from "@/lib/data"
+import { studentData, initialTestResultsData, initialTestsData, usersData, initialScheduleData } from "@/lib/data"
 import { format } from "date-fns"
 
 export default function StudentDashboard() {
-  const { summary, schedule, performance } = studentData;
+  const { summary, performance } = studentData;
   const [currentUser, setCurrentUser] = React.useState<{type: string, id: string, name: string, grade?: string, medium?: string} | null>(null);
+  
+  const [schedule, setSchedule] = React.useState(initialScheduleData);
 
   React.useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -40,6 +36,11 @@ export default function StudentDashboard() {
       } else {
         setCurrentUser(userData);
       }
+    }
+    
+    const savedSchedule = localStorage.getItem('shiksha-schedule');
+    if (savedSchedule) {
+      setSchedule(JSON.parse(savedSchedule));
     }
   }, []);
 
@@ -60,7 +61,21 @@ export default function StudentDashboard() {
   const upcomingTests = (currentUser?.grade && currentUser?.medium)
   ? initialTestsData.filter(t => t.status === 'Upcoming' && t.grade === currentUser.grade && t.medium === currentUser.medium) 
   : [];
-
+  
+  const formatTime12Hour = (timeString: string) => {
+    if (!timeString) return '';
+    const [hours, minutes] = timeString.split(':');
+    const h = parseInt(hours, 10);
+    const m = parseInt(minutes, 10);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const hour12 = h % 12 || 12;
+    const minuteString = m < 10 ? '0' + m : String(m);
+    return `${hour12}:${minuteString} ${ampm}`;
+  };
+  
+  const today = format(new Date(), 'eeee'); // "Monday", "Tuesday", etc.
+  const batchKey = currentUser ? `${currentUser.grade}-${currentUser.medium}` : '';
+  const todaysSchedule = schedule[batchKey as keyof typeof schedule]?.[today as keyof typeof schedule[keyof typeof schedule]] || [];
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -70,24 +85,28 @@ export default function StudentDashboard() {
             <CardDescription>Your classes and activities for today.</CardDescription>
             </CardHeader>
             <CardContent>
-            <Table>
-                <TableHeader>
-                <TableRow>
-                    <TableHead>Time</TableHead>
-                    <TableHead>Subject</TableHead>
-                </TableRow>
-                </TableHeader>
-                <TableBody>
-                {schedule.map((item) => (
-                    <TableRow key={item.time}>
-                    <TableCell className="font-medium">{item.time}</TableCell>
-                    <TableCell>
-                        <Badge variant={item.type === 'class' ? 'default' : 'secondary'}>{item.subject}</Badge>
-                    </TableCell>
+            {todaysSchedule.length > 0 ? (
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead>Time</TableHead>
+                        <TableHead>Subject</TableHead>
                     </TableRow>
-                ))}
-                </TableBody>
-            </Table>
+                    </TableHeader>
+                    <TableBody>
+                    {todaysSchedule.map((item) => (
+                        <TableRow key={item.id}>
+                        <TableCell className="font-medium">{formatTime12Hour(item.time)}</TableCell>
+                        <TableCell>
+                            <Badge variant={item.type === 'class' ? 'default' : 'secondary'}>{item.subject}</Badge>
+                        </TableCell>
+                        </TableRow>
+                    ))}
+                    </TableBody>
+                </Table>
+            ) : (
+                <p className="text-sm text-muted-foreground text-center py-8">No classes scheduled for today. Enjoy your day!</p>
+            )}
             </CardContent>
         </Card>
 
@@ -110,6 +129,7 @@ export default function StudentDashboard() {
                     {upcomingTests.map((test) => (
                         <TableRow key={test.id}>
                             <TableCell>{format(new Date(test.date), 'dd MMM, yyyy')}</TableCell>
+
                             <TableCell className="font-medium">{test.testName}</TableCell>
                             <TableCell>{test.subject}</TableCell>
                         </TableRow>

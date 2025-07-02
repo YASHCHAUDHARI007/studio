@@ -39,6 +39,7 @@ import {
   Users,
   LogOut,
   FlaskConical,
+  CalendarDays,
 } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import { Badge } from './ui/badge';
@@ -54,6 +55,7 @@ type Announcement = {
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/schedule', label: 'Schedule', icon: CalendarDays },
   { href: '/attendance', label: 'Attendance', icon: CalendarCheck },
   { href: '/documents', label: 'Documents', icon: FileText },
   { href: '/tests', label: 'Tests', icon: FlaskConical },
@@ -64,6 +66,7 @@ const navItems = [
 
 const studentNavItems = [
     { href: '/student-dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/schedule', label: 'Schedule', icon: CalendarDays },
     { href: '/attendance', label: 'Attendance', icon: CalendarCheck },
     { href: '/documents', label: 'Documents', icon: FileText },
     { href: '/tests', label: 'Tests', icon: FlaskConical },

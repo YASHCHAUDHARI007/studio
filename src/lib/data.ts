@@ -9,13 +9,6 @@ export const studentData = {
     attendance: '95%',
     upcomingAssignments: 3,
   },
-  schedule: [
-    { time: '09:00 AM', subject: 'Mathematics', type: 'class' },
-    { time: '10:00 AM', subject: 'Physics', type: 'class' },
-    { time: '11:00 AM', subject: 'Chemistry Lab', type: 'lab' },
-    { time: '01:00 PM', subject: 'English', type: 'class' },
-    { time: '02:00 PM', subject: 'History', type: 'class' },
-  ],
   performance: [
     { subject: 'Math', score: 85 },
     { subject: 'Science', score: 92 },
@@ -24,6 +17,43 @@ export const studentData = {
     { subject: 'Marathi', score: 95 },
   ],
 };
+
+export const initialScheduleData = {
+    "10th-English": {
+        "Monday": [
+            { id: "1", time: "09:00", subject: "Mathematics", type: "class" },
+            { id: "2", time: "10:00", subject: "Physics", type: "class" },
+            { id: "3", time: "11:00", subject: "Chemistry", type: "class" },
+            { id: "4", time: "13:00", subject: "English", type: "class" },
+        ],
+        "Tuesday": [
+            { id: "5", time: "09:00", subject: "Mathematics", type: "class" },
+            { id: "6", time: "10:00", subject: "Biology", type: "class" },
+            { id: "7", time: "11:00", subject: "History", type: "class" },
+            { id: "8", time: "13:00", subject: "Geography", type: "class" },
+        ],
+        "Wednesday": [
+            { id: "9", time: "09:00", subject: "Physics", type: "class" },
+            { id: "10", time: "10:00", subject: "Chemistry", type: "class" },
+            { id: "11", time: "11:00", subject: "English", type: "class" },
+            { id: "12", time: "13:00", subject: "Mathematics", type: "class" },
+        ],
+        "Thursday": [
+            { id: "13", time: "09:00", subject: "Biology", type: "class" },
+            { id: "14", time: "10:00", subject: "History", type: "class" },
+            { id: "15", time: "11:00", subject: "Geography", type: "class" },
+            { id: "16", time: "13:00", subject: "Physics", type: "class" },
+        ],
+        "Friday": [
+            { id: "17", time: "09:00", subject: "Chemistry Lab", type: "lab" },
+            { id: "18", time: "11:00", subject: "Mathematics", type: "class" },
+            { id: "19", time: "13:00", subject: "English", type: "class" },
+        ],
+        "Saturday": [],
+        "Sunday": [],
+    }
+}
+
 
 export const initialDocumentsData = [
   {
