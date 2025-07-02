@@ -1,3 +1,4 @@
+
 'use client'
 
 import * as React from "react"
@@ -107,7 +108,7 @@ export default function TestsPage() {
   
   const scheduleTestForm = useForm<z.infer<typeof scheduleTestSchema>>({
     resolver: zodResolver(scheduleTestSchema),
-    defaultValues: { testName: '', subject: '', grade: '', medium: '', time: '', totalMarks: 100 },
+    defaultValues: { testName: '', subject: '', grade: '', medium: '', date: undefined, time: '', totalMarks: 100 },
   })
 
   const enterMarksForm = useForm<z.infer<typeof enterMarksSchema>>({
@@ -354,7 +355,7 @@ export default function TestsPage() {
                       <TableCell className="font-medium">{test.testName}</TableCell>
                       <TableCell>{test.subject}</TableCell>
                       <TableCell>{test.grade} ({test.medium})</TableCell>
-                      <TableCell>{format(new Date(`${test.date}T00:00:00`), 'dd MMM, yyyy')} @ {formatTime12Hour(test.time)}</TableCell>
+                      <TableCell>{format(new Date(test.date), 'dd MMM, yyyy')} @ {formatTime12Hour(test.time)}</TableCell>
                       <TableCell>{test.totalMarks}</TableCell>
                       <TableCell>
                         <Badge variant={test.status === 'Completed' ? 'secondary' : 'default'}>{test.status}</Badge>

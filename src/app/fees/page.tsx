@@ -91,8 +91,15 @@ export default function FeesPage() {
 
   const paymentForm = useForm<z.infer<typeof paymentSchema>>({
     resolver: zodResolver(paymentSchema),
-    defaultValues: { amount: undefined, date: new Date(), notes: '' },
+    defaultValues: { amount: undefined, date: undefined, notes: '' },
   })
+  
+  React.useEffect(() => {
+    if (isRecordPaymentOpen) {
+      paymentForm.reset({ amount: undefined, date: new Date(), notes: '' });
+    }
+  }, [isRecordPaymentOpen, paymentForm]);
+
 
   const formatCurrency = (amount: number) => {
     const formattedAmount = new Intl.NumberFormat('en-IN', {

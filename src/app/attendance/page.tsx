@@ -109,10 +109,11 @@ export default function AttendancePage() {
 }
 
 function StudentAttendanceView({ studentId }: { studentId: string }) {
-  const [date, setDate] = React.useState<Date | undefined>(new Date())
+  const [date, setDate] = React.useState<Date | undefined>()
   const [attendanceRecords, setAttendanceRecords] = React.useState<AttendanceRecords>({});
   
   React.useEffect(() => {
+    setDate(new Date());
     if (typeof window !== 'undefined') {
         const savedRecords = localStorage.getItem('shiksha-attendance');
         setAttendanceRecords(savedRecords ? JSON.parse(savedRecords) : {});
@@ -126,17 +127,18 @@ function StudentAttendanceView({ studentId }: { studentId: string }) {
     const reasons: { [date: string]: string } = {};
 
     Object.entries(attendanceRecords).forEach(([dateStr, dailyRecords]) => {
+      const parsedDate = new Date(dateStr);
       if ('isHoliday' in dailyRecords && dailyRecords.isHoliday) {
-        holiday.push(new Date(dateStr));
+        holiday.push(parsedDate);
         if (dailyRecords.reason) {
           reasons[dateStr] = dailyRecords.reason;
         }
       } else {
         const status = (dailyRecords as DailyStudentRecords)[studentId];
         if (status === 'present') {
-          present.push(new Date(dateStr));
+          present.push(parsedDate);
         } else if (status === 'absent') {
-          absent.push(new Date(dateStr));
+          absent.push(parsedDate);
         }
       }
     });
@@ -210,7 +212,7 @@ function TeacherAttendanceView() {
     
     const [selectedGrade, setSelectedGrade] = React.useState<string>('')
     const [selectedMedium, setSelectedMedium] = React.useState<string>('')
-    const [selectedDate, setSelectedDate] = React.useState<Date>(new Date())
+    const [selectedDate, setSelectedDate] = React.useState<Date>()
     
     const [currentAttendance, setCurrentAttendance] = React.useState<Record<string, 'present' | 'absent'>>({});
     
@@ -218,6 +220,7 @@ function TeacherAttendanceView() {
     const [holidayReason, setHolidayReason] = React.useState('');
 
     React.useEffect(() => {
+        setSelectedDate(new Date());
         const savedStudents = localStorage.getItem('shiksha-students');
         setAllStudents(savedStudents ? JSON.parse(savedStudents) : usersData.students);
 
@@ -230,6 +233,7 @@ function TeacherAttendanceView() {
     }, [allStudents, selectedGrade, selectedMedium]);
     
     React.useEffect(() => {
+        if (!selectedDate) return;
         const dateKey = format(startOfDay(selectedDate), 'yyyy-MM-dd');
         const dailyRecords = attendanceRecords[dateKey] || {};
         if (!('isHoliday' in dailyRecords)) {
@@ -245,6 +249,7 @@ function TeacherAttendanceView() {
     }
 
     const handleSaveAttendance = () => {
+        if (!selectedDate) return;
         const dateKey = format(startOfDay(selectedDate), 'yyyy-MM-dd');
         const updatedRecords = {
             ...attendanceRecords,
@@ -273,12 +278,14 @@ function TeacherAttendanceView() {
         })
     }
     
-    const dateKey = format(startOfDay(selectedDate), 'yyyy-MM-dd');
-    const dayRecord = attendanceRecords[dateKey];
+    const dateKey = selectedDate ? format(startOfDay(selectedDate), 'yyyy-MM-dd') : '';
+    const dayRecord = dateKey ? attendanceRecords[dateKey] : undefined;
     const isHoliday = dayRecord && 'isHoliday' in dayRecord;
     const currentHolidayReason = isHoliday ? (dayRecord as HolidayRecord).reason : '';
 
     const handleMarkAsHoliday = () => {
+        if (!selectedDate) return;
+        const dateKey = format(startOfDay(selectedDate), 'yyyy-MM-dd');
         const updatedRecords: AttendanceRecords = {
             ...attendanceRecords,
             [dateKey]: {
@@ -297,6 +304,8 @@ function TeacherAttendanceView() {
     };
 
     const handleUnmarkHoliday = () => {
+        if (!selectedDate) return;
+        const dateKey = format(startOfDay(selectedDate), 'yyyy-MM-dd');
         const {[dateKey]: _, ...restRecords} = attendanceRecords;
         setAttendanceRecords(restRecords);
         localStorage.setItem('shiksha-attendance', JSON.stringify(restRecords));
@@ -350,7 +359,7 @@ function TeacherAttendanceView() {
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0">
-                                <Calendar mode="single" selected={selectedDate} onSelect={(d) => setSelectedDate(d || new Date())} initialFocus />
+                                <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} initialFocus />
                             </PopoverContent>
                         </Popover>
                     </div>
@@ -366,7 +375,7 @@ function TeacherAttendanceView() {
                             </DialogTrigger>
                             <DialogContent>
                                 <DialogHeader>
-                                    <DialogTitle>Mark {format(selectedDate, 'PPP')} as a holiday?</DialogTitle>
+                                    <DialogTitle>Mark {selectedDate ? format(selectedDate, 'PPP') : ''} as a holiday?</DialogTitle>
                                     <DialogDescription>This will apply to all grades. No attendance can be marked for this day.</DialogDescription>
                                 </DialogHeader>
                                 <div className="space-y-2">
@@ -425,7 +434,7 @@ function TeacherAttendanceView() {
                             </TableBody>
                         </Table>
                         <div className="flex justify-end">
-                            <Button onClick={handleSaveAttendance}>
+                            <Button onClick={handleSaveAttendance} disabled={!selectedDate}>
                                 <Save className="mr-2 h-4 w-4" />
                                 Save Attendance
                             </Button>
