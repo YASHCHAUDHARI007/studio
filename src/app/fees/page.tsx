@@ -216,11 +216,11 @@ export default function FeesPage() {
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Payment Due</AlertTitle>
-              <AlertDescription className="flex items-center justify-between">
+              <AlertDescription className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                 <span>
                   Outstanding balance of {formatCurrency(feeData.summary.due)}. Next due date is {feeData.summary.dueDate}.
                 </span>
-                <Button size="sm" onClick={handleSendReminder}>
+                <Button size="sm" onClick={handleSendReminder} className="w-full sm:w-auto">
                   <Send className="mr-2 h-4 w-4" />
                   Send Reminder
                 </Button>
@@ -229,23 +229,23 @@ export default function FeesPage() {
           )}
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <CardTitle>Payment History</CardTitle>
                 <CardDescription>
                   A record of payments for {feeData.name}.
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline">
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button variant="outline" className="w-full sm:w-auto">
                   <FileDown className="mr-2 h-4 w-4" />
                   Download Report
                 </Button>
                 <Dialog open={isRecordPaymentOpen} onOpenChange={setIsRecordPaymentOpen}>
                   <DialogTrigger asChild>
-                    <Button><PlusCircle className="mr-2 h-4 w-4" /> Record Payment</Button>
+                    <Button className="w-full sm:w-auto"><PlusCircle className="mr-2 h-4 w-4" /> Record Payment</Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                       <DialogTitle>Record a New Payment</DialogTitle>
                       <DialogDescription>Enter the details for the payment received from {feeData.name}.</DialogDescription>

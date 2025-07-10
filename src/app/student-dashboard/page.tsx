@@ -59,7 +59,7 @@ export default function StudentDashboard() {
             ...result,
             testName: test?.testName || 'N/A',
             subject: test?.subject || 'N/A',
-            date: test ? format(new Date(`${test.date}T00:00:00`), 'dd MMM, yyyy') : 'N/A',
+            date: test ? format(new Date(`${test.date}T00:00:00Z`), 'dd MMM, yyyy') : 'N/A',
             totalMarks: test?.totalMarks || 100,
         };
     })
@@ -81,7 +81,28 @@ export default function StudentDashboard() {
   };
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-3">
+            <CardHeader>
+                <CardTitle>Welcome back, {currentUser?.name || 'Student'}!</CardTitle>
+                <CardDescription>Here's a quick summary of your progress.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-6 md:grid-cols-3">
+                <div className="flex flex-col space-y-1 rounded-lg border p-4">
+                    <h3 className="text-sm font-medium text-muted-foreground">Overall Grade</h3>
+                    <p className="text-3xl font-bold">{summary.overallGrade}</p>
+                </div>
+                <div className="flex flex-col space-y-1 rounded-lg border p-4">
+                    <h3 className="text-sm font-medium text-muted-foreground">Attendance</h3>
+                    <p className="text-3xl font-bold">{summary.attendance}</p>
+                </div>
+                <div className="flex flex-col space-y-1 rounded-lg border p-4">
+                    <h3 className="text-sm font-medium text-muted-foreground">Upcoming Tests</h3>
+                    <p className="text-3xl font-bold">{upcomingTests.length}</p>
+                </div>
+            </CardContent>
+        </Card>
+
         <Card className="lg:col-span-2">
             <CardHeader>
             <CardTitle>Today's Schedule</CardTitle>
@@ -131,7 +152,7 @@ export default function StudentDashboard() {
                     <TableBody>
                     {upcomingTests.map((test) => (
                         <TableRow key={test.id}>
-                            <TableCell>{format(new Date(`${test.date}T00:00:00`), 'dd MMM, yyyy')}</TableCell>
+                            <TableCell>{format(new Date(`${test.date}T00:00:00Z`), 'dd MMM, yyyy')}</TableCell>
 
                             <TableCell className="font-medium">{test.testName}</TableCell>
                             <TableCell>{test.subject}</TableCell>
@@ -142,27 +163,6 @@ export default function StudentDashboard() {
             ) : (
                 <p className="text-sm text-muted-foreground">No upcoming tests scheduled.</p>
             )}
-            </CardContent>
-        </Card>
-
-        <Card className="lg:col-span-3">
-            <CardHeader>
-                <CardTitle>Welcome back, {currentUser?.name || 'Student'}!</CardTitle>
-                <CardDescription>Here's a quick summary of your progress.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-6 md:grid-cols-3">
-                <div className="flex flex-col space-y-1 rounded-lg border p-4">
-                    <h3 className="text-sm font-medium text-muted-foreground">Overall Grade</h3>
-                    <p className="text-3xl font-bold">{summary.overallGrade}</p>
-                </div>
-                <div className="flex flex-col space-y-1 rounded-lg border p-4">
-                    <h3 className="text-sm font-medium text-muted-foreground">Attendance</h3>
-                    <p className="text-3xl font-bold">{summary.attendance}</p>
-                </div>
-                <div className="flex flex-col space-y-1 rounded-lg border p-4">
-                    <h3 className="text-sm font-medium text-muted-foreground">Upcoming Tests</h3>
-                    <p className="text-3xl font-bold">{upcomingTests.length}</p>
-                </div>
             </CardContent>
         </Card>
 

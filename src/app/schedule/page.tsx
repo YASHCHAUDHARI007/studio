@@ -1,3 +1,4 @@
+
 'use client'
 
 import * as React from "react"
@@ -306,7 +307,7 @@ function TeacherScheduleView() {
 
                     {batchKey ? (
                         <Tabs defaultValue="Monday" className="w-full">
-                            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 md:grid-cols-7">
+                            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 md:grid-cols-7">
                                 {daysOfWeek.map(day => <TabsTrigger key={day} value={day}>{day}</TabsTrigger>)}
                             </TabsList>
                             {daysOfWeek.map(day => (
@@ -357,7 +358,7 @@ function TeacherScheduleView() {
             </Card>
 
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-                <DialogContent>
+                <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                         <DialogTitle>{editingEntry ? "Edit" : "Add"} Schedule Entry for {selectedDay}</DialogTitle>
                         <DialogDescription>Enter the details for the class or lab session.</DialogDescription>

@@ -93,14 +93,14 @@ export function TeacherManagement() {
   return (
     <>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <CardTitle>Manage Teachers</CardTitle>
             <CardDescription>View, add, or edit teacher details.</CardDescription>
           </div>
           <Dialog open={isAddTeacherDialogOpen} onOpenChange={setIsAddTeacherDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="w-full sm:w-auto">
                 <UserPlus className="mr-2 h-4 w-4" />
                 Add Teacher
               </Button>
@@ -192,7 +192,7 @@ export function TeacherManagement() {
         </CardContent>
       </Card>
       <Dialog open={showCredentialsDialog} onOpenChange={setShowCredentialsDialog}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Teacher Credentials Generated</DialogTitle>
             <DialogDescription>

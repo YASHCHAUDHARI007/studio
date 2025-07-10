@@ -164,7 +164,7 @@ export default function TestsPage() {
     if (test) {
         scheduleTestForm.reset({
             ...test,
-            date: new Date(`${test.date}T00:00:00`),
+            date: new Date(`${test.date}T00:00:00Z`),
         });
     } else {
         scheduleTestForm.reset({ testName: '', subject: '', grade: '', medium: '', date: new Date(), time: '', totalMarks: 100 });
@@ -321,7 +321,7 @@ export default function TestsPage() {
   return (
     <>
       <Tabs defaultValue="schedule" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2">
           <TabsTrigger value="schedule">
             <CalendarClock className="mr-2 h-4 w-4" />
             Test Schedule
@@ -334,7 +334,7 @@ export default function TestsPage() {
 
         <TabsContent value="schedule">
           <Card>
-            <CardHeader className="flex-row items-center justify-between">
+            <CardHeader className="flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <CardTitle>Test Schedule</CardTitle>
                 <CardDescription>
@@ -342,7 +342,7 @@ export default function TestsPage() {
                 </CardDescription>
               </div>
               {isTeacherOrAdmin && (
-                 <Button onClick={() => handleOpenScheduleForm(null)}>
+                 <Button onClick={() => handleOpenScheduleForm(null)} className="w-full sm:w-auto">
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Schedule Test
                  </Button>
@@ -367,7 +367,7 @@ export default function TestsPage() {
                       <TableCell className="font-medium">{test.testName}</TableCell>
                       <TableCell>{test.subject}</TableCell>
                       <TableCell>{test.grade} ({test.medium})</TableCell>
-                      <TableCell>{format(new Date(`${test.date}T00:00:00`), 'dd MMM, yyyy')} @ {formatTime12Hour(test.time)}</TableCell>
+                      <TableCell>{format(new Date(`${test.date}T00:00:00Z`), 'dd MMM, yyyy')} @ {formatTime12Hour(test.time)}</TableCell>
                       <TableCell>{test.totalMarks}</TableCell>
                       <TableCell>
                         <Badge variant={test.status === 'Completed' ? 'secondary' : 'default'}>{test.status}</Badge>
@@ -474,7 +474,7 @@ export default function TestsPage() {
       </Tabs>
 
       <Dialog open={isScheduleTestOpen} onOpenChange={setIsScheduleTestOpen}>
-        <DialogContent className="sm:max-w-xl">
+        <DialogContent className="sm:max-w-md">
             <DialogHeader>
                 <DialogTitle>{editingTest ? 'Edit Test' : 'Schedule a New Test'}</DialogTitle>
                 <DialogDescription>
@@ -564,7 +564,7 @@ export default function TestsPage() {
 
        {selectedTestForMarks && (
           <Dialog open={isEnterMarksOpen} onOpenChange={setIsEnterMarksOpen}>
-            <DialogContent className="sm:max-w-2xl">
+            <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>Enter Marks for '{selectedTestForMarks.testName}'</DialogTitle>
                     <DialogDescription>

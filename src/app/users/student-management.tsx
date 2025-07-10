@@ -159,19 +159,19 @@ export function StudentManagement() {
   return (
     <>
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <CardTitle>Manage Students</CardTitle>
           <CardDescription>View, add, or edit student details.</CardDescription>
         </div>
         <Dialog open={isAddStudentDialogOpen} onOpenChange={setIsAddStudentDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="w-full sm:w-auto">
               <UserPlus className="mr-2 h-4 w-4" />
               Add Student
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-xl">
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Add New Student</DialogTitle>
               <DialogDescription>
@@ -433,7 +433,7 @@ export function StudentManagement() {
       </CardContent>
     </Card>
     <Dialog open={showCredentialsDialog} onOpenChange={setShowCredentialsDialog}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
             <DialogTitle>Student Credentials Generated</DialogTitle>
             <DialogDescription>

@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export default function DashboardPage() {
   const [userType, setUserType] = React.useState<string | null>(null)
+  const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
     // Client-side only check
@@ -15,9 +16,10 @@ export default function DashboardPage() {
       const userData = JSON.parse(storedUser)
       setUserType(userData.type);
     }
+    setIsLoading(false);
   }, []);
 
-  if (!userType) {
+  if (isLoading) {
     return (
         <div className="space-y-4 p-6">
             <Skeleton className="h-32 w-full" />

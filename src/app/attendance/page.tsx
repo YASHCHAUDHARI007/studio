@@ -109,7 +109,7 @@ export default function AttendancePage() {
 }
 
 function StudentAttendanceView({ studentId }: { studentId: string }) {
-  const [date, setDate] = React.useState<Date | undefined>()
+  const [date, setDate] = React.useState<Date | undefined>(undefined)
   const [attendanceRecords, setAttendanceRecords] = React.useState<AttendanceRecords>({});
   
   React.useEffect(() => {
@@ -212,7 +212,7 @@ function TeacherAttendanceView() {
     
     const [selectedGrade, setSelectedGrade] = React.useState<string>('')
     const [selectedMedium, setSelectedMedium] = React.useState<string>('')
-    const [selectedDate, setSelectedDate] = React.useState<Date>()
+    const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(undefined);
     
     const [currentAttendance, setCurrentAttendance] = React.useState<Record<string, 'present' | 'absent'>>({});
     
@@ -373,7 +373,7 @@ function TeacherAttendanceView() {
                             <DialogTrigger asChild>
                                 <Button variant="outline"><PartyPopper className="mr-2 h-4 w-4" /> Mark as Holiday</Button>
                             </DialogTrigger>
-                            <DialogContent>
+                            <DialogContent className="sm:max-w-[425px]">
                                 <DialogHeader>
                                     <DialogTitle>Mark {selectedDate ? format(selectedDate, 'PPP') : ''} as a holiday?</DialogTitle>
                                     <DialogDescription>This will apply to all grades. No attendance can be marked for this day.</DialogDescription>

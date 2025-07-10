@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 export default function NotificationsPage() {
   return (
     <Tabs defaultValue="announcements" className="w-full">
-      <TabsList className="grid w-full grid-cols-2">
+      <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2">
         <TabsTrigger value="announcements">
           <Megaphone className="mr-2 h-4 w-4" />
           Common Announcement

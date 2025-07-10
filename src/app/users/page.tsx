@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 export default function UsersPage() {
   return (
     <Tabs defaultValue="students" className="w-full">
-      <TabsList className="grid w-full grid-cols-2">
+      <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2">
         <TabsTrigger value="students">
           <Users className="mr-2 h-4 w-4" />
           Students
