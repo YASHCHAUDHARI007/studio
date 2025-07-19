@@ -1,3 +1,4 @@
+
 'use client'
 
 import * as React from 'react'
@@ -11,9 +12,14 @@ import { Icons } from '@/components/icons'
 import { Loader2 } from 'lucide-react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { useShikshaData } from '@/hooks/use-shiksha-data'
-import { Skeleton } from '@/components/ui/skeleton'
 import { usersData } from '@/lib/data'
+
+// Combine all users into a single list for authentication
+const allUsers = [
+  ...Object.values(usersData.students).map(u => ({ ...u, type: 'student' })),
+  ...Object.values(usersData.teachers).map(u => ({ ...u, type: 'teacher' })),
+  { id: 'superadmin', name: 'Super Admin', username: 'superadmin', password: 'superpassword', type: 'superadmin' }
+];
 
 export default function LoginPage() {
   const router = useRouter()
@@ -21,11 +27,6 @@ export default function LoginPage() {
   const [username, setUsername] = React.useState('')
   const [password, setPassword] = React.useState('')
   const [isLoading, setIsLoading] = React.useState(false)
-  const { data: liveData, loading } = useShikshaData();
-
-  // Use static data for test credentials to avoid waiting for live data
-  const testStudents = Object.values(usersData.students);
-  const testTeachers = Object.values(usersData.teachers);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,36 +37,26 @@ export default function LoginPage() {
 
     // Mock authentication
     setTimeout(() => {
-      // Use live data for authentication if available, otherwise it will be null
-      const data = liveData;
-      if (!data) {
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not connect to the database.' });
-        setIsLoading(false);
-        return;
-      }
+      const user = allUsers.find(
+        (u) => u.username === username && u.password === password
+      );
 
-      const students = Object.values(data.students || {});
-      const teachers = Object.values(data.teachers || {});
+      if (user) {
+        toast({ title: 'Login Successful', description: `Welcome back, ${user.name}!` })
+        
+        const userToStore = {
+            type: user.type,
+            id: user.id,
+            name: user.name,
+        };
+        localStorage.setItem('user', JSON.stringify(userToStore));
+        
+        if (user.type === 'student') {
+            router.push('/student-dashboard');
+        } else {
+            router.push('/dashboard');
+        }
 
-      const student = students.find(
-        (s: any) => s.username === username && s.password === password
-      )
-      const teacher = teachers.find(
-        (t: any) => t.username === username && t.password === password
-      )
-
-      if (username === 'superadmin' && password === 'superpassword') {
-        toast({ title: 'Login Successful', description: 'Welcome, Super Admin!' })
-        localStorage.setItem('user', JSON.stringify({ type: 'superadmin', name: 'Super Admin' }));
-        router.push('/dashboard')
-      } else if (student) {
-        toast({ title: 'Login Successful', description: `Welcome back, ${(student as any).name}!` })
-        localStorage.setItem('user', JSON.stringify({ type: 'student', id: (student as any).id, name: (student as any).name }));
-        router.push('/student-dashboard')
-      } else if (teacher) {
-        toast({ title: 'Login Successful', description: `Welcome back, ${(teacher as any).name}!` })
-        localStorage.setItem('user', JSON.stringify({ type: 'teacher', id: (teacher as any).id, name: (teacher as any).name }));
-        router.push('/dashboard')
       } else {
         toast({
           variant: 'destructive',
@@ -76,16 +67,6 @@ export default function LoginPage() {
       setIsLoading(false)
     }, 1000)
   }
-
-  // Show a simpler skeleton while the app initializes the DB connection
-  if(loading) {
-    return (
-        <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background p-4">
-             <Skeleton className="w-full max-w-sm h-96" />
-        </div>
-    )
-  }
-
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background p-4">
@@ -147,7 +128,7 @@ export default function LoginPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {testStudents.slice(0, 2).map((student: any) => (
+                    {Object.values(usersData.students).slice(0, 2).map((student: any) => (
                       <TableRow key={student.id}>
                         <TableCell className="font-mono">{student.username}</TableCell>
                         <TableCell className="font-mono">{student.password}</TableCell>
@@ -172,7 +153,7 @@ export default function LoginPage() {
                       <TableCell className="font-mono">superadmin</TableCell>
                       <TableCell className="font-mono">superpassword</TableCell>
                     </TableRow>
-                    {testTeachers.slice(0, 2).map((teacher: any) => (
+                    {Object.values(usersData.teachers).slice(0, 2).map((teacher: any) => (
                       <TableRow key={teacher.id}>
                         <TableCell className="font-mono">{teacher.username}</TableCell>
                         <TableCell className="font-mono">{teacher.password}</TableCell>
