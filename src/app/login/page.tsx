@@ -10,9 +10,6 @@ import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { Icons } from '@/components/icons'
 import { Loader2 } from 'lucide-react'
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { usersData } from '@/lib/data'
 import { database } from '@/lib/firebase'
 import { ref, get } from 'firebase/database'
 
@@ -134,62 +131,6 @@ export default function LoginPage() {
               {isLoading ? 'Logging in...' : 'Login'}
             </Button>
           </form>
-        </CardContent>
-      </Card>
-      
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-lg">Test Credentials</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="students">
-              <AccordionTrigger>Student Logins</AccordionTrigger>
-              <AccordionContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="font-mono">Username</TableHead>
-                      <TableHead className="font-mono">Password</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {Object.values(usersData.students).slice(0, 2).map((student: any) => (
-                      <TableRow key={student.id}>
-                        <TableCell className="font-mono">{student.username}</TableCell>
-                        <TableCell className="font-mono">{student.password}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="teachers">
-              <AccordionTrigger>Teacher/Admin Logins</AccordionTrigger>
-              <AccordionContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="font-mono">Username</TableHead>
-                      <TableHead className="font-mono">Password</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell className="font-mono">superadmin</TableCell>
-                      <TableCell className="font-mono">superpassword</TableCell>
-                    </TableRow>
-                    {Object.values(usersData.teachers).slice(0, 2).map((teacher: any) => (
-                      <TableRow key={teacher.id}>
-                        <TableCell className="font-mono">{teacher.username}</TableCell>
-                        <TableCell className="font-mono">{teacher.password}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
         </CardContent>
       </Card>
     </div>
