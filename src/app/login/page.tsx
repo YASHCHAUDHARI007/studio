@@ -13,13 +13,8 @@ import { Loader2 } from 'lucide-react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { usersData } from '@/lib/data'
-
-// Combine all users into a single list for authentication
-const allUsers = [
-  ...Object.values(usersData.students).map(u => ({ ...u, type: 'student' })),
-  ...Object.values(usersData.teachers).map(u => ({ ...u, type: 'teacher' })),
-  { id: 'superadmin', name: 'Super Admin', username: 'superadmin', password: 'superpassword', type: 'superadmin' }
-];
+import { database } from '@/lib/firebase'
+import { ref, get } from 'firebase/database'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -28,44 +23,75 @@ export default function LoginPage() {
   const [password, setPassword] = React.useState('')
   const [isLoading, setIsLoading] = React.useState(false)
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     
     // Clear previous user
     localStorage.removeItem('user');
 
-    // Mock authentication
-    setTimeout(() => {
-      const user = allUsers.find(
-        (u) => u.username === username && u.password === password
-      );
+    try {
+        const dbRef = ref(database);
+        const snapshot = await get(dbRef);
 
-      if (user) {
-        toast({ title: 'Login Successful', description: `Welcome back, ${user.name}!` })
+        if (!snapshot.exists()) {
+            toast({
+                variant: 'destructive',
+                title: 'Database Error',
+                description: 'Could not connect to the database. Please try again later.',
+            });
+            setIsLoading(false);
+            return;
+        }
         
-        const userToStore = {
-            type: user.type,
-            id: user.id,
-            name: user.name,
-        };
-        localStorage.setItem('user', JSON.stringify(userToStore));
+        const data = snapshot.val();
+        const students = Object.values(data.students || {});
+        const teachers = Object.values(data.teachers || {});
         
-        if (user.type === 'student') {
-            router.push('/student-dashboard');
+        const allUsers = [
+            ...students.map((u: any) => ({ ...u, type: 'student' })),
+            ...teachers.map((u: any) => ({ ...u, type: 'teacher' })),
+            { id: 'superadmin', name: 'Super Admin', username: 'superadmin', password: 'superpassword', type: 'superadmin' }
+        ];
+
+        const user = allUsers.find(
+            (u: any) => u.username === username && u.password === password
+        );
+
+        if (user) {
+            toast({ title: 'Login Successful', description: `Welcome back, ${user.name}!` })
+            
+            const userToStore = {
+                type: user.type,
+                id: user.id,
+                name: user.name,
+            };
+            localStorage.setItem('user', JSON.stringify(userToStore));
+            
+            if (user.type === 'student') {
+                router.push('/student-dashboard');
+            } else {
+                router.push('/dashboard');
+            }
+
         } else {
-            router.push('/dashboard');
+            toast({
+                variant: 'destructive',
+                title: 'Login Failed',
+                description: 'Invalid username or password.',
+            })
         }
 
-      } else {
+    } catch (error) {
+        console.error("Login failed:", error);
         toast({
-          variant: 'destructive',
-          title: 'Login Failed',
-          description: 'Invalid username or password.',
-        })
-      }
-      setIsLoading(false)
-    }, 1000)
+            variant: 'destructive',
+            title: 'Login Failed',
+            description: 'An unexpected error occurred. Please check your connection.',
+        });
+    } finally {
+        setIsLoading(false)
+    }
   }
 
   return (
