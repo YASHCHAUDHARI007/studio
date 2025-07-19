@@ -179,6 +179,7 @@ export const usersData = {
     'TCH-001': { id: 'TCH-001', name: 'Mrs. Davis', subject: 'Mathematics', email: 'davis@example.com', username: 'davis@example.com', password: 'password123' },
     'TCH-002': { id: 'TCH-002', name: 'Mr. Khan', subject: 'Science', email: 'khan@example.com', username: 'khan@example.com', password: 'password123' },
     'TCH-003': { id: 'TCH-003', name: 'Ms. Joshi', subject: 'English', email: 'joshi@example.com', username: 'joshi@example.com', password: 'password123' },
+    'TCH-004': { id: 'TCH-004', name: 'Yash Chaudhari', subject: 'IT', email: 'yashchaudhari478@gmail.com', username: 'yashchaudhari478@gmail.com', password: 'samarth@12345' },
   }
 };
 
