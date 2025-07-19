@@ -20,7 +20,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { PlusCircle, Calendar as CalendarIcon, FilePenLine, BarChart2, CalendarClock, Edit, Trash2 } from "lucide-react"
-import { initialTestsData, initialTestResultsData, usersData } from "@/lib/data"
 import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
@@ -62,6 +61,8 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import { Calendar } from "@/components/ui/calendar"
+import { useShikshaData } from "@/hooks/use-shiksha-data"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const scheduleTestSchema = z.object({
   id: z.string().optional(),
@@ -88,12 +89,8 @@ type Test = z.infer<typeof scheduleTestSchema> & { id: string; status: 'Upcoming
 
 export default function TestsPage() {
   const { toast } = useToast()
+  const { data, loading, saveData } = useShikshaData();
   const [currentUser, setCurrentUser] = React.useState<{type: string; id?: string; name?: string; grade?: string; medium?: string;} | null>(null);
-  
-  const [allStudents, setAllStudents] = React.useState<any[]>([]);
-
-  const [tests, setTests] = React.useState<Test[]>([])
-  const [testResults, setTestResults] = React.useState([])
   
   const [isScheduleTestOpen, setIsScheduleTestOpen] = React.useState(false)
   const [isEnterMarksOpen, setIsEnterMarksOpen] = React.useState(false)
@@ -117,44 +114,38 @@ export default function TestsPage() {
   });
   
   React.useEffect(() => {
-    // This now runs only on the client
-    const savedStudents = localStorage.getItem('shiksha-students');
-    const currentStudents = savedStudents ? JSON.parse(savedStudents) : usersData.students;
-    setAllStudents(currentStudents);
-
-    const savedTests = localStorage.getItem('shiksha-tests');
-    setTests(savedTests ? JSON.parse(savedTests) : initialTestsData);
-
-    const savedResults = localStorage.getItem('shiksha-test-results');
-    setTestResults(savedResults ? JSON.parse(savedResults) : initialTestResultsData);
-
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-        const userData = JSON.parse(storedUser);
-        if (userData.type === 'student') {
-            const studentDetails = currentStudents.find((s:any) => s.id === userData.id);
-            if (studentDetails) {
-                setCurrentUser({ ...userData, grade: studentDetails.grade, medium: studentDetails.medium });
-            } else {
-                setCurrentUser(userData);
-            }
-        } else {
-            setCurrentUser(userData);
-        }
+        setCurrentUser(JSON.parse(storedUser));
     }
   }, []);
 
   React.useEffect(() => {
-    if (tests.length > 0) {
-      localStorage.setItem('shiksha-tests', JSON.stringify(tests));
+    if (data && currentUser?.type === 'student') {
+        const studentDetails = data.students[currentUser.id as any];
+        if (studentDetails) {
+            setCurrentUser(prev => ({...prev, ...studentDetails}));
+        }
     }
-  }, [tests]);
+  }, [data, currentUser?.type]);
 
-  React.useEffect(() => {
-    if (testResults.length > 0) {
-      localStorage.setItem('shiksha-test-results', JSON.stringify(testResults));
-    }
-  }, [testResults]);
+
+  if (loading || !data) {
+    return (
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-8 w-1/2" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-64 w-full" />
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const allStudents = Object.values(data.students);
+  const tests = data.tests || [];
+  const testResults = data.testResults || {};
 
   const userType = currentUser?.type;
   const isTeacherOrAdmin = userType === 'teacher' || userType === 'superadmin';
@@ -172,24 +163,24 @@ export default function TestsPage() {
     setIsScheduleTestOpen(true);
   }
 
-  function onScheduleTest(data: z.infer<typeof scheduleTestSchema>) {
-    const formattedDate = format(data.date, 'yyyy-MM-dd');
-    if (editingTest) {
-        // Update existing test
-        const updatedTest = { ...editingTest, ...data, date: formattedDate, status: new Date(data.date) > new Date() ? 'Upcoming' : 'Completed' } as Test;
-        setTests(tests.map(t => t.id === editingTest.id ? updatedTest : t).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-        toast({ title: "Success", description: "Test has been updated." });
+  function onScheduleTest(formData: z.infer<typeof scheduleTestSchema>) {
+    const formattedDate = format(formData.date, 'yyyy-MM-dd');
+    const testId = editingTest ? editingTest.id : `TEST-${Date.now()}`;
+    const newTest = {
+      ...formData,
+      id: testId,
+      date: formattedDate,
+      status: new Date(formData.date) > new Date() ? 'Upcoming' : 'Completed',
+    } as Test;
+    
+    const testIndex = tests.findIndex((t: any) => t.id === testId);
+    if(testIndex > -1) {
+        saveData(`tests/${testIndex}`, newTest);
     } else {
-        // Add new test
-        const newTest: Test = {
-            id: `TEST-${String(tests.length + 1).padStart(3, '0')}`,
-            ...data,
-            date: formattedDate,
-            status: new Date(data.date) > new Date() ? 'Upcoming' : 'Completed',
-        }
-        setTests([newTest, ...tests].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-        toast({ title: "Success", description: "New test has been scheduled." })
+        saveData(`tests/${tests.length}`, newTest);
     }
+    
+    toast({ title: "Success", description: `Test has been ${editingTest ? 'updated' : 'scheduled'}.` })
     
     setIsScheduleTestOpen(false)
     setEditingTest(null)
@@ -197,13 +188,15 @@ export default function TestsPage() {
 
   function handleDeleteTest() {
     if (!deletingTestId) return;
-    setTests(tests.filter(t => t.id !== deletingTestId));
+    const updatedTests = tests.filter((t:any) => t.id !== deletingTestId);
+    saveData('tests', updatedTests);
+
     toast({ title: "Success", description: "Test has been deleted." });
     setDeletingTestId(null);
   }
 
   function handleOpenEnterMarks(test: Test) {
-    const studentsOfBatch = allStudents.filter(s => s.grade === test.grade && s.medium === test.medium);
+    const studentsOfBatch = allStudents.filter((s:any) => s.grade === test.grade && s.medium === test.medium);
     if(studentsOfBatch.length === 0) {
       toast({
         variant: "destructive",
@@ -213,28 +206,21 @@ export default function TestsPage() {
       return;
     }
     
-    enterMarksForm.control.register('marks', {
-        validate: (value) => {
-            if (value.some((v: any) => v.score > test.totalMarks)) {
-                return `Score cannot exceed ${test.totalMarks}`
-            }
-            return true;
-        }
-    })
-    const marksData = studentsOfBatch.map(s => ({ 
+    enterMarksForm.control.register('marks');
+    const marksData = studentsOfBatch.map((s:any) => ({ 
         studentId: s.id, 
         studentName: s.name, 
-        score: testResults.find((r:any) => r.testId === test.id && r.studentId === s.id)?.score ?? undefined
+        score: testResults[test.id]?.[s.id]?.score ?? undefined
     }));
     replace(marksData);
     setSelectedTestForMarks(test);
     setIsEnterMarksOpen(true);
   }
 
-  function onEnterMarks(data: z.infer<typeof enterMarksSchema>) {
+  function onEnterMarks(formData: z.infer<typeof enterMarksSchema>) {
     if (!selectedTestForMarks) return;
 
-    const invalidScores = data.marks.filter(mark => mark.score !== undefined && mark.score > selectedTestForMarks.totalMarks);
+    const invalidScores = formData.marks.filter(mark => mark.score !== undefined && mark.score > selectedTestForMarks.totalMarks);
     if (invalidScores.length > 0) {
         toast({
             variant: "destructive",
@@ -244,18 +230,21 @@ export default function TestsPage() {
         return;
     }
     
-    const newResults = data.marks
+    const newResultsForTest = formData.marks
       .filter(mark => mark.score !== undefined && mark.score !== null && mark.score >= 0)
-      .map(mark => ({
-        id: Math.random(),
-        testId: selectedTestForMarks.id,
-        studentId: mark.studentId,
-        studentName: mark.studentName,
-        score: mark.score!,
-      }));
+      .reduce((acc, mark) => {
+        const resultId = testResults[selectedTestForMarks.id]?.[mark.studentId]?.id || `TR-${Date.now()}-${mark.studentId}`;
+        acc[mark.studentId] = {
+            id: resultId,
+            testId: selectedTestForMarks.id,
+            studentId: mark.studentId,
+            studentName: mark.studentName,
+            score: mark.score!,
+        };
+        return acc;
+      }, {} as any);
     
-    const otherResults = testResults.filter((r:any) => r.testId !== selectedTestForMarks.id);
-    setTestResults([...otherResults, ...newResults] as any);
+    saveData(`testResults/${selectedTestForMarks.id}`, newResultsForTest);
     
     toast({ title: "Success", description: "Test results have been saved." });
     setIsEnterMarksOpen(false);
@@ -265,15 +254,15 @@ export default function TestsPage() {
 
   const testsToDisplay = React.useMemo(() => {
     if (userType === 'student' && currentUser?.grade && currentUser?.medium) {
-      return tests.filter(test => test.grade === currentUser.grade && test.medium === currentUser.medium);
+      return tests.filter((test:any) => test.grade === currentUser.grade && test.medium === currentUser.medium);
     }
     return tests;
   }, [tests, userType, currentUser]);
 
   const completedTests = React.useMemo(() => {
-    const allCompleted = tests.filter(t => t.status === 'Completed');
+    const allCompleted = tests.filter((t:any) => t.status === 'Completed');
      if (userType === 'student' && currentUser?.grade && currentUser?.medium) {
-        return allCompleted.filter(test => test.grade === currentUser.grade && test.medium === currentUser.medium);
+        return allCompleted.filter((test:any) => test.grade === currentUser.grade && test.medium === currentUser.medium);
      }
      return allCompleted;
   }, [tests, userType, currentUser]);
@@ -287,21 +276,21 @@ export default function TestsPage() {
   }, [completedTests, selectedResultTestId]);
 
   
-  const selectedTestForResults = tests.find(t => t.id === selectedResultTestId);
+  const selectedTestForResults = tests.find((t:any) => t.id === selectedResultTestId);
+  const resultsForSelectedTest = selectedResultTestId ? Object.values(testResults[selectedResultTestId] || {}) : [];
 
-  const resultsForSelectedTest = React.useMemo(() => {
-    const results = testResults.filter((r:any) => r.testId === selectedResultTestId);
-    if (userType === 'student') {
-        return results.filter((r:any) => r.studentId === currentUser?.id);
+  const userFilteredResults = React.useMemo(() => {
+     if (userType === 'student') {
+        return resultsForSelectedTest.filter((r:any) => r.studentId === currentUser?.id);
     }
-    return results;
-  }, [testResults, selectedResultTestId, userType, currentUser]);
+    return resultsForSelectedTest;
+  }, [resultsForSelectedTest, userType, currentUser]);
+  
   
   let classAverage = 0;
   if (selectedTestForResults && resultsForSelectedTest.length > 0) {
-    const totalScore = testResults.filter((r:any) => r.testId === selectedResultTestId).reduce((sum, r:any) => sum + r.score, 0);
-    const totalStudentsInTest = testResults.filter((r:any) => r.testId === selectedResultTestId).length;
-    classAverage = totalStudentsInTest > 0 ? (totalScore / totalStudentsInTest / selectedTestForResults.totalMarks) * 100 : 0;
+    const totalScore = resultsForSelectedTest.reduce((sum, r:any) => sum + r.score, 0);
+    classAverage = (totalScore / resultsForSelectedTest.length / selectedTestForResults.totalMarks) * 100;
   }
 
   const formatTime12Hour = (timeString: string) => {
@@ -362,7 +351,7 @@ export default function TestsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {testsToDisplay.map((test) => (
+                  {testsToDisplay.map((test: any) => (
                     <TableRow key={test.id}>
                       <TableCell className="font-medium">{test.testName}</TableCell>
                       <TableCell>{test.subject}</TableCell>
@@ -417,7 +406,7 @@ export default function TestsPage() {
                             <SelectValue placeholder="Select a completed test" />
                         </SelectTrigger>
                         <SelectContent>
-                            {completedTests.map(test => (
+                            {completedTests.map((test:any) => (
                                 <SelectItem key={test.id} value={test.id}>{test.testName} ({test.subject} - {test.grade} {test.medium})</SelectItem>
                             ))}
                         </SelectContent>
@@ -441,8 +430,8 @@ export default function TestsPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {resultsForSelectedTest.length > 0 ? (
-                                resultsForSelectedTest.map((result:any) => (
+                            {userFilteredResults.length > 0 ? (
+                                userFilteredResults.map((result:any) => (
                                     <TableRow key={result.id}>
                                         {isTeacherOrAdmin && <TableCell className="font-medium">{result.studentName}</TableCell>}
                                         <TableCell className="text-right">{result.score} / {selectedTestForResults.totalMarks}</TableCell>
@@ -496,7 +485,7 @@ export default function TestsPage() {
                         <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                         <FormControl><SelectTrigger><SelectValue placeholder="Select grade" /></SelectTrigger></FormControl>
                         <SelectContent>
-                            {[...new Set(allStudents.map(s => s.grade))].sort().map(grade => (
+                            {[...new Set(allStudents.map((s:any) => s.grade))].sort().map(grade => (
                                 <SelectItem key={grade} value={grade}>{grade} Grade</SelectItem>
                             ))}
                         </SelectContent>

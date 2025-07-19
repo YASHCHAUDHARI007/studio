@@ -11,7 +11,6 @@ import {
   CardFooter,
 } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
-import { usersData } from "@/lib/data"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Select,
@@ -51,6 +50,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { useShikshaData } from "@/hooks/use-shiksha-data"
 
 // Type definitions
 type DailyStudentRecords = {
@@ -66,7 +66,7 @@ type AttendanceRecords = {
 
 export default function AttendancePage() {
   const [currentUser, setCurrentUser] = React.useState<{type: string, id: string} | null>(null)
-  const [isLoading, setIsLoading] = React.useState(true)
+  const [isLoadingUser, setIsLoadingUser] = React.useState(true)
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -74,11 +74,11 @@ export default function AttendancePage() {
       if (storedUser) {
         setCurrentUser(JSON.parse(storedUser))
       }
-      setIsLoading(false)
+      setIsLoadingUser(false)
     }
   }, [])
 
-  if (isLoading) {
+  if (isLoadingUser) {
     return (
       <div className="space-y-4">
         <div className="flex justify-between">
@@ -110,14 +110,12 @@ export default function AttendancePage() {
 
 function StudentAttendanceView({ studentId }: { studentId: string }) {
   const [date, setDate] = React.useState<Date | undefined>(undefined)
-  const [attendanceRecords, setAttendanceRecords] = React.useState<AttendanceRecords>({});
-  
+  const {data, loading} = useShikshaData();
+
+  const attendanceRecords: AttendanceRecords = data?.attendance || {}
+
   React.useEffect(() => {
     setDate(new Date());
-    if (typeof window !== 'undefined') {
-        const savedRecords = localStorage.getItem('shiksha-attendance');
-        setAttendanceRecords(savedRecords ? JSON.parse(savedRecords) : {});
-    }
   }, []);
 
   const { presentDays, absentDays, holidayDays, holidayReasons } = React.useMemo(() => {
@@ -148,6 +146,10 @@ function StudentAttendanceView({ studentId }: { studentId: string }) {
   
   const selectedDateStr = date ? format(startOfDay(date), 'yyyy-MM-dd') : '';
   const holidayReasonForSelectedDate = holidayReasons[selectedDateStr];
+
+  if(loading) {
+    return <div className="flex justify-center"><Skeleton className="h-[400px] w-full max-w-2xl" /></div>
+  }
 
   return (
     <div className="flex justify-center">
@@ -207,8 +209,7 @@ function StudentAttendanceView({ studentId }: { studentId: string }) {
 
 function TeacherAttendanceView() {
     const { toast } = useToast()
-    const [allStudents, setAllStudents] = React.useState(usersData.students)
-    const [attendanceRecords, setAttendanceRecords] = React.useState<AttendanceRecords>({});
+    const { data, loading, saveData } = useShikshaData();
     
     const [selectedGrade, setSelectedGrade] = React.useState<string>('')
     const [selectedMedium, setSelectedMedium] = React.useState<string>('')
@@ -221,12 +222,10 @@ function TeacherAttendanceView() {
 
     React.useEffect(() => {
         setSelectedDate(new Date());
-        const savedStudents = localStorage.getItem('shiksha-students');
-        setAllStudents(savedStudents ? JSON.parse(savedStudents) : usersData.students);
-
-        const savedRecords = localStorage.getItem('shiksha-attendance');
-        setAttendanceRecords(savedRecords ? JSON.parse(savedRecords) : {});
     }, []);
+
+    const allStudents = data ? Object.values(data.students) : [];
+    const attendanceRecords: AttendanceRecords = data?.attendance || {};
 
     const studentsInBatch = React.useMemo(() => {
         return allStudents.filter(s => s.grade === selectedGrade && s.medium === selectedMedium);
@@ -251,13 +250,6 @@ function TeacherAttendanceView() {
     const handleSaveAttendance = () => {
         if (!selectedDate) return;
         const dateKey = format(startOfDay(selectedDate), 'yyyy-MM-dd');
-        const updatedRecords = {
-            ...attendanceRecords,
-            [dateKey]: {
-                ...(attendanceRecords[dateKey] as DailyStudentRecords),
-                ...currentAttendance
-            }
-        };
 
         const hasUnmarked = studentsInBatch.some(s => !currentAttendance[s.id]);
         if(hasUnmarked) {
@@ -269,8 +261,8 @@ function TeacherAttendanceView() {
             return;
         }
 
-        setAttendanceRecords(updatedRecords);
-        localStorage.setItem('shiksha-attendance', JSON.stringify(updatedRecords));
+        const path = `attendance/${dateKey}`;
+        saveData(path, currentAttendance);
 
         toast({
             title: "Attendance Saved",
@@ -286,15 +278,13 @@ function TeacherAttendanceView() {
     const handleMarkAsHoliday = () => {
         if (!selectedDate) return;
         const dateKey = format(startOfDay(selectedDate), 'yyyy-MM-dd');
-        const updatedRecords: AttendanceRecords = {
-            ...attendanceRecords,
-            [dateKey]: {
-                isHoliday: true,
-                reason: holidayReason
-            }
+        const holidayData = {
+            isHoliday: true,
+            reason: holidayReason
         };
-        setAttendanceRecords(updatedRecords);
-        localStorage.setItem('shiksha-attendance', JSON.stringify(updatedRecords));
+
+        saveData(`attendance/${dateKey}`, holidayData);
+
         toast({
             title: "Holiday Marked",
             description: `${format(selectedDate, 'PPP')} has been marked as a holiday.`,
@@ -306,15 +296,24 @@ function TeacherAttendanceView() {
     const handleUnmarkHoliday = () => {
         if (!selectedDate) return;
         const dateKey = format(startOfDay(selectedDate), 'yyyy-MM-dd');
-        const {[dateKey]: _, ...restRecords} = attendanceRecords;
-        setAttendanceRecords(restRecords);
-        localStorage.setItem('shiksha-attendance', JSON.stringify(restRecords));
+        
+        saveData(`attendance/${dateKey}`, null); // Remove the holiday entry
+
         toast({
             title: "Holiday Removed",
             description: `The holiday on ${format(selectedDate, 'PPP')} has been removed.`,
         });
     };
     
+    if (loading) {
+      return (
+        <Card>
+          <CardHeader><Skeleton className="h-8 w-1/2" /></CardHeader>
+          <CardContent><Skeleton className="h-64 w-full" /></CardContent>
+        </Card>
+      )
+    }
+
     const grades = [...new Set(allStudents.map(s => s.grade))].sort();
     const mediums = [...new Set(allStudents.map(s => s.medium))].sort();
 

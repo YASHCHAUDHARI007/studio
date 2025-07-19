@@ -7,11 +7,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { usersData } from '@/lib/data'
 import { Icons } from '@/components/icons'
 import { Loader2 } from 'lucide-react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useShikshaData } from '@/hooks/use-shiksha-data'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const [username, setUsername] = React.useState('')
   const [password, setPassword] = React.useState('')
   const [isLoading, setIsLoading] = React.useState(false)
+  const { data, loading } = useShikshaData();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,11 +31,20 @@ export default function LoginPage() {
 
     // Mock authentication
     setTimeout(() => {
-      const student = usersData.students.find(
-        (s) => s.username === username && s.password === password
+      if (!data) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not connect to the database.' });
+        setIsLoading(false);
+        return;
+      }
+
+      const students = Object.values(data.students || {});
+      const teachers = Object.values(data.teachers || {});
+
+      const student = students.find(
+        (s: any) => s.username === username && s.password === password
       )
-      const teacher = usersData.teachers.find(
-        (t) => t.username === username && t.password === password
+      const teacher = teachers.find(
+        (t: any) => t.username === username && t.password === password
       )
 
       if (username === 'superadmin' && password === 'superpassword') {
@@ -41,12 +52,12 @@ export default function LoginPage() {
         localStorage.setItem('user', JSON.stringify({ type: 'superadmin', name: 'Super Admin' }));
         router.push('/dashboard')
       } else if (student) {
-        toast({ title: 'Login Successful', description: `Welcome back, ${student.name}!` })
-        localStorage.setItem('user', JSON.stringify({ type: 'student', id: student.id, name: student.name }));
+        toast({ title: 'Login Successful', description: `Welcome back, ${(student as any).name}!` })
+        localStorage.setItem('user', JSON.stringify({ type: 'student', id: (student as any).id, name: (student as any).name }));
         router.push('/student-dashboard')
       } else if (teacher) {
-        toast({ title: 'Login Successful', description: `Welcome back, ${teacher.name}!` })
-        localStorage.setItem('user', JSON.stringify({ type: 'teacher', id: teacher.id, name: teacher.name }));
+        toast({ title: 'Login Successful', description: `Welcome back, ${(teacher as any).name}!` })
+        localStorage.setItem('user', JSON.stringify({ type: 'teacher', id: (teacher as any).id, name: (teacher as any).name }));
         router.push('/dashboard')
       } else {
         toast({
@@ -58,6 +69,18 @@ export default function LoginPage() {
       setIsLoading(false)
     }, 1000)
   }
+
+  if(loading || !data) {
+    return (
+        <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background p-4">
+             <Skeleton className="w-full max-w-sm h-96" />
+             <Skeleton className="w-full max-w-sm h-64" />
+        </div>
+    )
+  }
+
+  const students = Object.values(data.students);
+  const teachers = Object.values(data.teachers);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background p-4">
@@ -119,7 +142,7 @@ export default function LoginPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {usersData.students.slice(0, 2).map((student) => (
+                    {students.slice(0, 2).map((student: any) => (
                       <TableRow key={student.id}>
                         <TableCell className="font-mono">{student.username}</TableCell>
                         <TableCell className="font-mono">{student.password}</TableCell>
@@ -144,7 +167,7 @@ export default function LoginPage() {
                       <TableCell className="font-mono">superadmin</TableCell>
                       <TableCell className="font-mono">superpassword</TableCell>
                     </TableRow>
-                    {usersData.teachers.slice(0, 1).map((teacher) => (
+                    {teachers.slice(0, 1).map((teacher: any) => (
                       <TableRow key={teacher.id}>
                         <TableCell className="font-mono">{teacher.username}</TableCell>
                         <TableCell className="font-mono">{teacher.password}</TableCell>

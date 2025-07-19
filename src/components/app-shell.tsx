@@ -43,8 +43,8 @@ import {
 } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import { Badge } from './ui/badge';
-import { initialAnnouncementsData } from '@/lib/data';
 import { formatDistanceToNow } from 'date-fns';
+import { useShikshaData } from '@/hooks/use-shiksha-data';
 
 type Announcement = {
   id: string;
@@ -77,30 +77,14 @@ function AppHeader() {
   const { toggleSidebar } = useSidebar();
   const [theme, setTheme] = React.useState('light');
   const router = useRouter();
-  const [announcements, setAnnouncements] = React.useState<Announcement[]>([]);
-
-  const fetchAnnouncements = React.useCallback(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('shiksha-announcements');
-      const data = saved ? JSON.parse(saved) : initialAnnouncementsData;
-      setAnnouncements(data);
-    }
-  }, []);
+  const {data} = useShikshaData();
+  
+  const announcements = data?.announcements ? Object.values(data.announcements).sort((a:any, b:any) => new Date(b.date).getTime() - new Date(a.date).getTime()) : [];
 
   React.useEffect(() => {
-    fetchAnnouncements();
     const isDarkMode = document.documentElement.classList.contains('dark');
     setTheme(isDarkMode ? 'dark' : 'light');
-
-    const handleStorageChange = () => {
-      fetchAnnouncements();
-    };
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, [fetchAnnouncements]);
+  }, []);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -157,7 +141,7 @@ function AppHeader() {
             <DropdownMenuSeparator />
             {announcements.length > 0 ? (
               <div className="max-h-80 overflow-y-auto">
-                {announcements.map(ann => (
+                {announcements.map((ann: Announcement) => (
                   <DropdownMenuItem key={ann.id} className="flex flex-col items-start gap-1 whitespace-normal p-2">
                     <p className="font-semibold">{ann.title}</p>
                     <p className="text-sm text-muted-foreground">{ann.message}</p>

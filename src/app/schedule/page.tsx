@@ -20,7 +20,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { PlusCircle, Edit, Trash2 } from "lucide-react"
-import { initialScheduleData, usersData } from "@/lib/data"
 import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
@@ -59,6 +58,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useShikshaData } from "@/hooks/use-shiksha-data"
 
 const scheduleEntrySchema = z.object({
   id: z.string().optional(),
@@ -68,32 +68,31 @@ const scheduleEntrySchema = z.object({
 })
 
 type ScheduleEntry = z.infer<typeof scheduleEntrySchema>
-type Schedule = { [day: string]: ScheduleEntry[] }
-type AllSchedules = { [batchKey: string]: Schedule }
 
 const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 export default function SchedulePage() {
   const [currentUser, setCurrentUser] = React.useState<{type: string, id?: string; name?: string; grade?: string; medium?: string;} | null>(null);
-  const [isLoading, setIsLoading] = React.useState(true);
+  const { data, loading } = useShikshaData();
 
   React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        const userData = JSON.parse(storedUser);
-         if (userData.type === 'student') {
-            const studentDetails = usersData.students.find(s => s.id === userData.id);
-            setCurrentUser(studentDetails ? { ...userData, grade: studentDetails.grade, medium: studentDetails.medium } : userData);
-        } else {
-           setCurrentUser(userData);
-        }
-      }
-      setIsLoading(false);
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
     }
   }, []);
 
-  if (isLoading) {
+  React.useEffect(() => {
+    if (data && currentUser?.type === 'student') {
+        const studentDetails = data.students[currentUser.id as any];
+        if (studentDetails) {
+            setCurrentUser(prev => ({...prev, ...studentDetails}));
+        }
+    }
+  }, [data, currentUser?.type]);
+
+
+  if (loading || !data) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-10 w-full" />
@@ -103,11 +102,11 @@ export default function SchedulePage() {
   }
 
   if (currentUser?.type === 'student') {
-    return <StudentScheduleView student={currentUser} />
+    return <StudentScheduleView student={currentUser} allSchedules={data.schedules} />
   }
 
   if (currentUser?.type === 'teacher' || currentUser?.type === 'superadmin') {
-    return <TeacherScheduleView />
+    return <TeacherScheduleView allStudents={data.students} allSchedules={data.schedules} />
   }
 
   return (
@@ -120,14 +119,8 @@ export default function SchedulePage() {
   )
 }
 
-function StudentScheduleView({ student }: { student: any }) {
-  const [allSchedules, setAllSchedules] = React.useState<AllSchedules>({})
+function StudentScheduleView({ student, allSchedules }: { student: any; allSchedules: any }) {
 
-  React.useEffect(() => {
-     const savedSchedules = localStorage.getItem('shiksha-schedule');
-     setAllSchedules(savedSchedules ? JSON.parse(savedSchedules) : initialScheduleData);
-  }, [])
-  
   const formatTime12Hour = (timeString: string) => {
     if (!timeString) return '';
     const [hours, minutes] = timeString.split(':');
@@ -164,10 +157,10 @@ function StudentScheduleView({ student }: { student: any }) {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {studentSchedule[day] && studentSchedule[day].length > 0 ? (
-                                    studentSchedule[day]
-                                        .sort((a,b) => a.time.localeCompare(b.time))
-                                        .map(entry => (
+                                {studentSchedule[day] && Object.values(studentSchedule[day]).length > 0 ? (
+                                    Object.values(studentSchedule[day])
+                                        .sort((a: any, b: any) => a.time.localeCompare(b.time))
+                                        .map((entry: any) => (
                                             <TableRow key={entry.id}>
                                                 <TableCell className="font-medium">{formatTime12Hour(entry.time)}</TableCell>
                                                 <TableCell>{entry.subject}</TableCell>
@@ -189,11 +182,10 @@ function StudentScheduleView({ student }: { student: any }) {
   )
 }
 
-function TeacherScheduleView() {
+function TeacherScheduleView({ allStudents, allSchedules }: { allStudents: any, allSchedules: any }) {
     const { toast } = useToast()
-    const [allStudents, setAllStudents] = React.useState(usersData.students)
-    const [allSchedules, setAllSchedules] = React.useState<AllSchedules>(initialScheduleData);
-
+    const { saveData } = useShikshaData();
+    
     const [selectedGrade, setSelectedGrade] = React.useState<string>('')
     const [selectedMedium, setSelectedMedium] = React.useState<string>('')
     
@@ -205,20 +197,12 @@ function TeacherScheduleView() {
     
     const form = useForm<ScheduleEntry>({ resolver: zodResolver(scheduleEntrySchema) });
 
-    React.useEffect(() => {
-        const savedSchedules = localStorage.getItem('shiksha-schedule');
-        setAllSchedules(savedSchedules ? JSON.parse(savedSchedules) : initialScheduleData);
-    }, []);
-
-    React.useEffect(() => {
-        localStorage.setItem('shiksha-schedule', JSON.stringify(allSchedules));
-    }, [allSchedules]);
-
     const batchKey = selectedGrade && selectedMedium ? `${selectedGrade}-${selectedMedium}` : '';
-    const currentSchedule = allSchedules[batchKey] || daysOfWeek.reduce((acc, day) => ({...acc, [day]: []}), {});
+    const currentSchedule = allSchedules[batchKey] || daysOfWeek.reduce((acc, day) => ({...acc, [day]: {}}), {});
     
-    const grades = [...new Set(allStudents.map(s => s.grade))].sort();
-    const mediums = [...new Set(allStudents.map(s => s.medium))].sort();
+    const studentsArray = Object.values(allStudents);
+    const grades = [...new Set(studentsArray.map((s:any) => s.grade))].sort();
+    const mediums = [...new Set(studentsArray.map((s:any) => s.medium))].sort();
     
     const handleOpenForm = (day: string, entry: ScheduleEntry | null) => {
         setSelectedDay(day);
@@ -230,21 +214,11 @@ function TeacherScheduleView() {
     const handleFormSubmit = (data: ScheduleEntry) => {
         if (!batchKey || !selectedDay) return;
 
-        const newEntry = { ...data, id: editingEntry ? editingEntry.id : `E-${Date.now()}` };
+        const entryId = editingEntry ? editingEntry.id! : `E-${Date.now()}`;
+        const newEntry = { ...data, id: entryId };
 
-        setAllSchedules(prev => {
-            const updatedDaySchedule = editingEntry
-                ? currentSchedule[selectedDay].map(e => e.id === newEntry.id ? newEntry : e)
-                : [...(currentSchedule[selectedDay] || []), newEntry];
-
-            return {
-                ...prev,
-                [batchKey]: {
-                    ...currentSchedule,
-                    [selectedDay]: updatedDaySchedule,
-                }
-            };
-        });
+        const path = `schedules/${batchKey}/${selectedDay}/${entryId}`;
+        saveData(path, newEntry);
 
         toast({ title: editingEntry ? "Entry Updated" : "Entry Added", description: `Schedule for ${selectedDay} has been updated.` });
         setIsFormOpen(false);
@@ -254,16 +228,8 @@ function TeacherScheduleView() {
         if (!entryToDelete || !batchKey) return;
         const { day, id } = entryToDelete;
         
-        setAllSchedules(prev => {
-             const updatedDaySchedule = prev[batchKey]?.[day]?.filter(e => e.id !== id) || [];
-             return {
-                ...prev,
-                [batchKey]: {
-                    ...prev[batchKey],
-                    [day]: updatedDaySchedule,
-                }
-             }
-        });
+        const path = `schedules/${batchKey}/${day}/${id}`;
+        saveData(path, null); // Deletes the entry in Firebase
 
         toast({ title: "Entry Deleted", description: `Schedule entry for ${day} has been removed.` });
         setEntryToDelete(null);
@@ -327,10 +293,10 @@ function TeacherScheduleView() {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {currentSchedule[day] && currentSchedule[day].length > 0 ? (
-                                                currentSchedule[day]
-                                                    .sort((a,b) => a.time.localeCompare(b.time))
-                                                    .map(entry => (
+                                            {currentSchedule[day] && Object.values(currentSchedule[day]).length > 0 ? (
+                                                Object.values(currentSchedule[day])
+                                                    .sort((a:any,b:any) => a.time.localeCompare(b.time))
+                                                    .map((entry: any) => (
                                                         <TableRow key={entry.id}>
                                                             <TableCell className="font-medium">{formatTime12Hour(entry.time)}</TableCell>
                                                             <TableCell>{entry.subject}</TableCell>

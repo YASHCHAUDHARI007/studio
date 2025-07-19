@@ -41,9 +41,10 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/hooks/use-toast'
-import { usersData } from "@/lib/data"
 import { UserPlus } from 'lucide-react'
 import { Label } from '@/components/ui/label'
+import { useShikshaData } from '@/hooks/use-shiksha-data'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const teacherSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -54,7 +55,7 @@ const teacherSchema = z.object({
 type TeacherFormValues = z.infer<typeof teacherSchema>
 
 export function TeacherManagement() {
-  const [teachers, setTeachers] = React.useState(usersData.teachers)
+  const { data, loading, saveData } = useShikshaData();
   const [isAddTeacherDialogOpen, setIsAddTeacherDialogOpen] = React.useState(false)
   const [showCredentialsDialog, setShowCredentialsDialog] = React.useState(false)
   const [generatedCredentials, setGeneratedCredentials] = React.useState({ username: '', password: '' })
@@ -69,26 +70,39 @@ export function TeacherManagement() {
     },
   })
 
-  function onSubmit(data: TeacherFormValues) {
-    const username = data.email
+  async function onSubmit(formData: TeacherFormValues) {
+    const username = formData.email
     const password = 'password123' // Simple default password
+    const teacherId = `TCH-${Date.now()}`;
 
     const newTeacher = {
-      id: `TCH-${String(teachers.length + 1).padStart(3, '0')}`,
+      id: teacherId,
       username,
       password,
-      ...data,
+      ...formData,
     }
-    setTeachers([...teachers, newTeacher])
+    await saveData(`teachers/${teacherId}`, newTeacher);
+    
     setGeneratedCredentials({ username, password })
     toast({
       title: 'Teacher Added',
-      description: `${data.name} has been added successfully.`,
+      description: `${formData.name} has been added successfully.`,
     })
     form.reset()
     setIsAddTeacherDialogOpen(false)
     setShowCredentialsDialog(true)
   }
+
+  if (loading || !data) {
+    return (
+        <Card>
+            <CardHeader><Skeleton className='h-8 w-1/2'/></CardHeader>
+            <CardContent><Skeleton className='h-64 w-full'/></CardContent>
+        </Card>
+    )
+  }
+  
+  const teachers = Object.values(data.teachers || {});
 
   return (
     <>
@@ -178,7 +192,7 @@ export function TeacherManagement() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {teachers.map((teacher) => (
+              {teachers.map((teacher: any) => (
                 <TableRow key={teacher.id}>
                   <TableCell className="font-mono text-muted-foreground">{teacher.id}</TableCell>
                   <TableCell className="font-medium">{teacher.name}</TableCell>

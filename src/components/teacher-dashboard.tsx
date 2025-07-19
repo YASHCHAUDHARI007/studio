@@ -17,22 +17,30 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { usersData } from "@/lib/data"
 import { Users, BookOpen, FileText } from "lucide-react"
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { useShikshaData } from '@/hooks/use-shiksha-data'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export function TeacherDashboard() {
-  const [assignedStudents, setAssignedStudents] = React.useState(usersData.students);
+  const { data, loading } = useShikshaData();
 
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedStudents = localStorage.getItem('shiksha-students');
-      if (savedStudents) {
-        setAssignedStudents(JSON.parse(savedStudents));
-      }
-    }
-  }, []);
+  if (loading || !data) {
+    return (
+      <div className="space-y-6">
+          <Skeleton className="h-24 w-full" />
+          <div className="grid gap-4 md:grid-cols-3">
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-32 w-full" />
+          </div>
+          <Skeleton className="h-64 w-full" />
+      </div>
+    )
+  }
+
+  const assignedStudents = Object.values(data.students || {});
 
   return (
     <div className="space-y-6">
@@ -98,7 +106,7 @@ export function TeacherDashboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {assignedStudents.map((student) => (
+              {assignedStudents.map((student: any) => (
                 <TableRow key={student.id}>
                   <TableCell className="font-mono text-xs text-muted-foreground">{student.id}</TableCell>
                   <TableCell className="font-medium">{student.name}</TableCell>

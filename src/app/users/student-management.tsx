@@ -42,7 +42,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { usersData, initialAllStudentsFeeData } from "@/lib/data"
 import { CalendarIcon, UserPlus } from 'lucide-react'
 import {
   Select,
@@ -55,6 +54,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
+import { useShikshaData } from '@/hooks/use-shiksha-data'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const studentSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -75,22 +76,11 @@ const studentSchema = z.object({
 type StudentFormValues = z.infer<typeof studentSchema>
 
 export function StudentManagement() {
-  const [students, setStudents] = React.useState(() => {
-    if (typeof window === 'undefined') return usersData.students;
-    const saved = localStorage.getItem('shiksha-students');
-    return saved ? JSON.parse(saved) : usersData.students;
-  });
-
+  const { data, loading, saveData } = useShikshaData();
   const [isAddStudentDialogOpen, setIsAddStudentDialogOpen] = React.useState(false)
   const [showCredentialsDialog, setShowCredentialsDialog] = React.useState(false)
   const [generatedCredentials, setGeneratedCredentials] = React.useState({ username: '', password: '' })
   const { toast } = useToast()
-
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('shiksha-students', JSON.stringify(students));
-    }
-  }, [students]);
 
   const form = useForm<StudentFormValues>({
     resolver: zodResolver(studentSchema),
@@ -107,54 +97,62 @@ export function StudentManagement() {
     },
   })
 
-  function onSubmit(data: StudentFormValues) {
-    const username = data.parentContact;
-    const password = `${data.name.split(' ')[0].toLowerCase()}${format(data.dateOfBirth, 'ddMMyyyy')}`;
+  async function onSubmit(formData: StudentFormValues) {
+    if (!data) return;
+
+    const username = formData.parentContact;
+    const password = `${formData.name.split(' ')[0].toLowerCase()}${format(formData.dateOfBirth, 'ddMMyyyy')}`;
+    const studentId = `STU-${Date.now()}`;
     
     const newStudent = {
-      id: `STU-${String(students.length + 1).padStart(3, '0')}`,
-      name: data.name,
-      email: data.email,
-      grade: data.grade,
-      medium: data.medium,
-      parentName: data.parentName,
-      parentContact: data.parentContact,
-      dateOfBirth: format(data.dateOfBirth, 'yyyy-MM-dd'),
-      dateJoined: format(data.dateJoined, 'yyyy-MM-dd'),
+      id: studentId,
+      name: formData.name,
+      email: formData.email,
+      grade: formData.grade,
+      medium: formData.medium,
+      parentName: formData.parentName,
+      parentContact: formData.parentContact,
+      dateOfBirth: format(formData.dateOfBirth, 'yyyy-MM-dd'),
+      dateJoined: format(formData.dateJoined, 'yyyy-MM-dd'),
       username: username,
       password: password,
-      totalAnnualFees: data.totalAnnualFees,
+      totalAnnualFees: formData.totalAnnualFees,
     }
 
-    setStudents([...students, newStudent])
+    await saveData(`students/${studentId}`, newStudent);
     
-    // Also update fee data in local storage
-    if (typeof window !== 'undefined') {
-      const savedFees = localStorage.getItem('shiksha-fees');
-      const currentFees = savedFees ? JSON.parse(savedFees) : initialAllStudentsFeeData;
-      const newFeeRecord = {
-           name: newStudent.name,
-           summary: {
-              total: newStudent.totalAnnualFees,
-              paid: 0,
-              due: newStudent.totalAnnualFees,
-              dueDate: 'N/A', // Or some logic to set this
-           },
-           paymentHistory: [],
-      };
-      const updatedFees = { ...currentFees, [newStudent.id]: newFeeRecord };
-      localStorage.setItem('shiksha-fees', JSON.stringify(updatedFees));
-    }
+    const newFeeRecord = {
+        name: newStudent.name,
+        summary: {
+            total: newStudent.totalAnnualFees,
+            paid: 0,
+            due: newStudent.totalAnnualFees,
+            dueDate: 'N/A',
+        },
+        paymentHistory: [],
+    };
+    await saveData(`fees/${studentId}`, newFeeRecord);
 
     setGeneratedCredentials({ username, password });
     toast({
       title: 'Student Added',
-      description: `${data.name} has been added successfully.`,
+      description: `${formData.name} has been added successfully.`,
     })
     form.reset()
     setIsAddStudentDialogOpen(false)
     setShowCredentialsDialog(true)
   }
+
+  if (loading || !data) {
+    return (
+        <Card>
+            <CardHeader><Skeleton className='h-8 w-1/2'/></CardHeader>
+            <CardContent><Skeleton className='h-64 w-full'/></CardContent>
+        </Card>
+    )
+  }
+
+  const students = Object.values(data.students || {});
 
   return (
     <>
@@ -415,7 +413,7 @@ export function StudentManagement() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {students.map((student) => (
+            {students.map((student: any) => (
               <TableRow key={student.id}>
                 <TableCell className="font-mono text-muted-foreground">{student.id}</TableCell>
                 <TableCell className="font-medium">{student.name}</TableCell>

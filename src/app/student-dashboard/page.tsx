@@ -18,43 +18,56 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { studentData, initialTestResultsData, initialTestsData, usersData, initialScheduleData } from "@/lib/data"
+import { studentData } from "@/lib/data"
 import { format } from "date-fns"
+import { useShikshaData } from '@/hooks/use-shiksha-data'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function StudentDashboard() {
   const { summary } = studentData;
+  const { data, loading } = useShikshaData();
   const [currentUser, setCurrentUser] = React.useState<{type: string, id: string, name: string, grade?: string, medium?: string} | null>(null);
   const [todaysSchedule, setTodaysSchedule] = React.useState<any[]>([]);
 
   React.useEffect(() => {
-    let userData: any;
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      userData = JSON.parse(storedUser);
-      const studentDetails = usersData.students.find(s => s.id === userData.id);
-      if(studentDetails) {
-        setCurrentUser({...userData, grade: studentDetails.grade, medium: studentDetails.medium });
-      } else {
-        setCurrentUser(userData);
-      }
-    }
-    
-    const savedSchedule = localStorage.getItem('shiksha-schedule');
-    const schedule = savedSchedule ? JSON.parse(savedSchedule) : initialScheduleData;
-
-    if (userData) {
-      const studentDetails = usersData.students.find(s => s.id === userData.id);
-      const today = format(new Date(), 'eeee'); // This is fine inside useEffect
-      const batchKey = studentDetails ? `${studentDetails.grade}-${studentDetails.medium}` : '';
-      const scheduleForToday = schedule[batchKey as keyof typeof schedule]?.[today as keyof typeof schedule[keyof typeof schedule]] || [];
-      setTodaysSchedule(scheduleForToday.sort((a:any,b:any) => a.time.localeCompare(b.time)));
+      const userData = JSON.parse(storedUser);
+      setCurrentUser(userData);
     }
   }, []);
 
-  const studentResults = (currentUser?.id ? initialTestResultsData
-    .filter(r => r.studentId === currentUser.id) : [])
-    .map(result => {
-        const test = initialTestsData.find(t => t.id === result.testId);
+  React.useEffect(() => {
+    if (data && currentUser) {
+      const studentDetails = data.students[currentUser.id];
+      if (studentDetails) {
+          setCurrentUser(prev => ({ ...prev!, grade: studentDetails.grade, medium: studentDetails.medium }));
+      }
+      const today = format(new Date(), 'eeee');
+      const batchKey = studentDetails ? `${studentDetails.grade}-${studentDetails.medium}` : '';
+      const scheduleForToday = data.schedules[batchKey]?.[today] || [];
+      setTodaysSchedule(Object.values(scheduleForToday).sort((a:any,b:any) => a.time.localeCompare(b.time)));
+    }
+  }, [data, currentUser]);
+
+  if (loading || !data || !currentUser) {
+    return (
+        <div className="space-y-6">
+            <Skeleton className="h-40 w-full" />
+            <div className="grid gap-6 lg:grid-cols-3">
+                <Skeleton className="h-64 w-full lg:col-span-2" />
+                <Skeleton className="h-64 w-full" />
+            </div>
+             <Skeleton className="h-48 w-full" />
+        </div>
+    )
+  }
+  
+  const studentResults = Object.values(data.testResults)
+    .flatMap((test: any) => Object.values(test))
+    .filter((r: any) => r.studentId === currentUser.id)
+    .map((result: any) => {
+        const test = data.tests.find((t: any) => t.id === result.testId);
         return {
             ...result,
             testName: test?.testName || 'N/A',
@@ -65,8 +78,8 @@ export default function StudentDashboard() {
     })
     .slice(0, 3);
   
-  const upcomingTests = (currentUser?.grade && currentUser?.medium)
-  ? initialTestsData.filter(t => t.status === 'Upcoming' && t.grade === currentUser.grade && t.medium === currentUser.medium) 
+  const upcomingTests = currentUser.grade && currentUser.medium
+  ? Object.values(data.tests).filter((t: any) => t.status === 'Upcoming' && t.grade === currentUser.grade && t.medium === currentUser.medium) 
   : [];
   
   const formatTime12Hour = (timeString: string) => {
@@ -150,7 +163,7 @@ export default function StudentDashboard() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                    {upcomingTests.map((test) => (
+                    {upcomingTests.map((test: any) => (
                         <TableRow key={test.id}>
                             <TableCell>{format(new Date(`${test.date}T00:00:00Z`), 'dd MMM, yyyy')}</TableCell>
 
@@ -182,7 +195,7 @@ export default function StudentDashboard() {
                 </TableRow>
                 </TableHeader>
                 <TableBody>
-                {studentResults.map((result) => (
+                {studentResults.map((result: any) => (
                     <TableRow key={result.id}>
                     <TableCell className="font-medium">{result.subject}</TableCell>
                     <TableCell>{result.testName}</TableCell>

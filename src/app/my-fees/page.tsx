@@ -1,3 +1,4 @@
+
 'use client'
 
 import * as React from 'react'
@@ -18,10 +19,11 @@ import {
 } from "@/components/ui/table"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, Loader2 } from "lucide-react"
-import { initialAllStudentsFeeData } from "@/lib/data"
 import { format } from 'date-fns'
+import { useShikshaData } from '@/hooks/use-shiksha-data'
 
 type FeeData = {
+  name: string;
   summary: {
     total: number;
     paid: number;
@@ -39,21 +41,19 @@ type FeeData = {
 export default function MyFeesPage() {
   const [feeData, setFeeData] = React.useState<FeeData | null>(null)
   const [isLoading, setIsLoading] = React.useState(true);
+  const {data, loading} = useShikshaData();
 
   React.useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && data) {
         const storedUser = localStorage.getItem('user');
-        const savedFees = localStorage.getItem('shiksha-fees');
         
-        const allFees = savedFees ? JSON.parse(savedFees) : initialAllStudentsFeeData;
-
         if (storedUser) {
             const userData = JSON.parse(storedUser);
-            setFeeData(allFees[userData.id]);
+            setFeeData(data.fees[userData.id]);
         }
         setIsLoading(false);
     }
-  }, []);
+  }, [data]);
 
   const formatCurrency = (amount: number) => {
     const formattedAmount = new Intl.NumberFormat('en-IN', {
@@ -65,7 +65,7 @@ export default function MyFeesPage() {
     return formattedAmount.replace(/\s/g, '').replace('₹', 'Rs.');
   }
 
-  if (isLoading) {
+  if (isLoading || loading) {
     return (
       <div className="flex justify-center items-center h-48">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -148,7 +148,7 @@ export default function MyFeesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paymentHistory.length > 0 ? (
+              {paymentHistory && paymentHistory.length > 0 ? (
                 paymentHistory.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell className="font-medium">{format(new Date(`${item.date}T00:00:00`), 'dd MMM, yyyy')}</TableCell>

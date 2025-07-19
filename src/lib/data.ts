@@ -1,4 +1,4 @@
-import { subDays, format } from 'date-fns';
+import { format } from 'date-fns';
 
 const today = new Date('2024-07-26T12:00:00Z');
 
@@ -60,21 +60,21 @@ export const initialDocumentsData = [
     id: 1,
     title: 'Algebra Chapter 5 Notes',
     subject: 'Mathematics',
-    uploadDate: format(subDays(today, 2), 'dd MMM, yyyy'),
+    uploadDate: format(new Date('2024-07-24T12:00:00Z'), 'dd MMM, yyyy'),
     url: 'https://docs.google.com/document/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit?usp=sharing',
   },
   {
     id: 2,
     title: 'Thermodynamics Summary',
     subject: 'Physics',
-    uploadDate: format(subDays(today, 5), 'dd MMM, yyyy'),
+    uploadDate: format(new Date('2024-07-21T12:00:00Z'), 'dd MMM, yyyy'),
     url: 'https://docs.google.com/document/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit?usp=sharing',
   },
   {
     id: 3,
     title: 'Indian Independence Movement',
     subject: 'History',
-    uploadDate: format(subDays(today, 10), 'dd MMM, yyyy'),
+    uploadDate: format(new Date('2024-07-16T12:00:00Z'), 'dd MMM, yyyy'),
     url: 'https://docs.google.com/document/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit?usp=sharing',
   },
 ];
@@ -86,7 +86,7 @@ export const initialTestsData = [
     subject: 'Science',
     grade: '10th',
     medium: 'English',
-    date: format(subDays(today, 14), 'yyyy-MM-dd'),
+    date: '2024-07-12',
     time: '10:00',
     totalMarks: 100,
     status: 'Completed',
@@ -97,7 +97,7 @@ export const initialTestsData = [
     subject: 'Mathematics',
     grade: '10th',
     medium: 'English',
-    date: format(subDays(today, 7), 'yyyy-MM-dd'),
+    date: '2024-07-19',
     time: '11:00',
     totalMarks: 50,
     status: 'Completed',
@@ -108,7 +108,7 @@ export const initialTestsData = [
     subject: 'Mathematics',
     grade: '9th',
     medium: 'Semi-English',
-    date: format(subDays(today, 7), 'yyyy-MM-dd'),
+    date: '2024-07-19',
     time: '11:00',
     totalMarks: 50,
     status: 'Completed',
@@ -119,7 +119,7 @@ export const initialTestsData = [
     subject: 'History',
     grade: '10th',
     medium: 'English',
-    date: format(new Date(), 'yyyy-MM-dd'),
+    date: '2024-07-26',
     time: '14:00',
     totalMarks: 25,
     status: 'Upcoming',
@@ -127,32 +127,20 @@ export const initialTestsData = [
 ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
 
-export const initialTestResultsData = [
-    // Results for TEST-001 (Science, 100 marks)
-    { id: 1, testId: 'TEST-001', studentId: 'STU-001', studentName: 'Rohan Sharma', score: 92 },
-    { id: 2, testId: 'TEST-001', studentId: 'STU-002', studentName: 'Priya Singh', score: 88 },
+export const initialTestResultsData = {
+    "TEST-001": {
+        'STU-001': { id: 'TR-1', testId: 'TEST-001', studentId: 'STU-001', studentName: 'Rohan Sharma', score: 92 },
+        'STU-002': { id: 'TR-2', testId: 'TEST-001', studentId: 'STU-002', studentName: 'Priya Singh', score: 88 },
+    },
+    "TEST-002": {
+        'STU-001': { id: 'TR-3', testId: 'TEST-002', studentId: 'STU-001', studentName: 'Rohan Sharma', score: 43 },
+        'STU-002': { id: 'TR-4', testId: 'TEST-002', studentId: 'STU-002', studentName: 'Priya Singh', score: 46 },
+    },
+    "TEST-003": {
+         'STU-003': { id: 'TR-5', testId: 'TEST-003', studentId: 'STU-003', studentName: 'Amit Patel', score: 38 },
+    }
+}
 
-    // Results for TEST-002 (Math, 50 marks)
-    { id: 3, testId: 'TEST-002', studentId: 'STU-001', studentName: 'Rohan Sharma', score: 43 },
-    { id: 4, testId: 'TEST-002', studentId: 'STU-002', studentName: 'Priya Singh', score: 46 },
-
-    // Results for TEST-003 (Math, 50 marks)
-    { id: 5, testId: 'TEST-003', studentId: 'STU-003', studentName: 'Amit Patel', score: 38 },
-];
-
-
-export const initialStudentFeeData = {
-  summary: {
-    total: 75000,
-    paid: 50000,
-    due: 25000,
-    dueDate: '31 Aug, 2024',
-  },
-  paymentHistory: [
-    { id: 'PAY-001', date: '2024-06-15', amount: 25000, notes: 'First installment' },
-    { id: 'PAY-002', date: '2024-07-30', amount: 25000, notes: 'Second installment' },
-  ],
-};
 
 export const initialAllStudentsFeeData = {
   'STU-001': {
@@ -182,29 +170,32 @@ export const initialAllStudentsFeeData = {
 };
 
 export const usersData = {
-  students: [
-    { id: 'STU-001', name: 'Rohan Sharma', grade: '10th', medium: 'English', parentName: 'Mr. Sharma', parentContact: '9876543210', email: 'rohan.sharma@example.com', dateOfBirth: '2007-07-27', dateJoined: '2021-06-15', username: '9876543210', password: 'rohan27072007', totalAnnualFees: 75000 },
-    { id: 'STU-002', name: 'Priya Singh', grade: '10th', medium: 'English', parentName: 'Ms. Singh', parentContact: '9876543211', email: 'priya.singh@example.com', dateOfBirth: '2007-05-15', dateJoined: '2021-06-15', username: '9876543211', password: 'priya15052007', totalAnnualFees: 75000 },
-    { id: 'STU-003', name: 'Amit Patel', grade: '9th', medium: 'Semi-English', parentName: 'Mr. Patel', parentContact: '9876543212', email: 'amit.patel@example.com', dateOfBirth: '2008-09-01', dateJoined: '2022-04-01', username: '9876543212', password: 'amit01092008', totalAnnualFees: 68000 },
-  ],
-  teachers: [
-    { id: 'TCH-001', name: 'Mrs. Davis', subject: 'Mathematics', email: 'davis@example.com', username: 'davis@example.com', password: 'password123' },
-    { id: 'TCH-002', name: 'Mr. Khan', subject: 'Science', email: 'khan@example.com', username: 'khan@example.com', password: 'password123' },
-    { id: 'TCH-003', name: 'Ms. Joshi', subject: 'English', email: 'joshi@example.com', username: 'joshi@example.com', password: 'password123' },
-  ]
+  students: {
+    'STU-001': { id: 'STU-001', name: 'Rohan Sharma', grade: '10th', medium: 'English', parentName: 'Mr. Sharma', parentContact: '9876543210', email: 'rohan.sharma@example.com', dateOfBirth: '2007-07-27', dateJoined: '2021-06-15', username: '9876543210', password: 'rohan27072007', totalAnnualFees: 75000 },
+    'STU-002': { id: 'STU-002', name: 'Priya Singh', grade: '10th', medium: 'English', parentName: 'Ms. Singh', parentContact: '9876543211', email: 'priya.singh@example.com', dateOfBirth: '2007-05-15', dateJoined: '2021-06-15', username: '9876543211', password: 'priya15052007', totalAnnualFees: 75000 },
+    'STU-003': { id: 'STU-003', name: 'Amit Patel', grade: '9th', medium: 'Semi-English', parentName: 'Mr. Patel', parentContact: '9876543212', email: 'amit.patel@example.com', dateOfBirth: '2008-09-01', dateJoined: '2022-04-01', username: '9876543212', password: 'amit01092008', totalAnnualFees: 68000 },
+  },
+  teachers: {
+    'TCH-001': { id: 'TCH-001', name: 'Mrs. Davis', subject: 'Mathematics', email: 'davis@example.com', username: 'davis@example.com', password: 'password123' },
+    'TCH-002': { id: 'TCH-002', name: 'Mr. Khan', subject: 'Science', email: 'khan@example.com', username: 'khan@example.com', password: 'password123' },
+    'TCH-003': { id: 'TCH-003', name: 'Ms. Joshi', subject: 'English', email: 'joshi@example.com', username: 'joshi@example.com', password: 'password123' },
+  }
 };
 
-export const initialAnnouncementsData: { id: string; title: string; message: string; date: string }[] = [
-  {
+export const initialAnnouncementsData = {
+  'AN-1': {
     id: 'AN-1',
     title: 'Holiday Declared',
     message: 'School will be closed tomorrow on account of a regional festival.',
-    date: subDays(today, 1).toISOString(),
+    date: new Date('2024-07-25T12:00:00Z').toISOString(),
   },
-  {
+  'AN-2': {
     id: 'AN-2',
     title: 'Annual Sports Day',
     message: 'The annual sports day will be held next Friday. All students are requested to participate.',
-    date: subDays(today, 3).toISOString(),
+    date: new Date('2024-07-23T12:00:00Z').toISOString(),
   }
-];
+};
+
+
+export const initialAttendanceData = {};

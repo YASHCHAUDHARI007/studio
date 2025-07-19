@@ -18,18 +18,17 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Send, Loader2 } from 'lucide-react';
-import { initialAnnouncementsData } from '@/lib/data';
+import { useShikshaData } from '@/hooks/use-shiksha-data';
 
 const announcementSchema = z.object({
   title: z.string().min(1, 'Title is required.'),
   message: z.string().min(1, 'Message is required.'),
 });
 
-type Announcement = z.infer<typeof announcementSchema> & { id: string; date: string };
-
 export function AnnouncementForm() {
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const { toast } = useToast();
+  const { saveData } = useShikshaData();
 
   const form = useForm<z.infer<typeof announcementSchema>>({
     resolver: zodResolver(announcementSchema),
@@ -39,43 +38,34 @@ export function AnnouncementForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof announcementSchema>) {
-    setIsLoading(true);
+  async function onSubmit(values: z.infer<typeof announcementSchema>) {
+    setIsSubmitting(true);
     
-    // Simulate sending notification
-    setTimeout(() => {
-        try {
-            if (typeof window === 'undefined') return;
-            const savedAnnouncements = localStorage.getItem('shiksha-announcements');
-            const announcements: Announcement[] = savedAnnouncements ? JSON.parse(savedAnnouncements) : initialAnnouncementsData;
-            
-            const newAnnouncement: Announcement = {
-                id: `AN-${Date.now()}`,
-                ...values,
-                date: new Date().toISOString(),
-            };
+    try {
+        const id = `AN-${Date.now()}`;
+        const newAnnouncement = {
+            id,
+            ...values,
+            date: new Date().toISOString(),
+        };
 
-            const updatedAnnouncements = [newAnnouncement, ...announcements];
-            localStorage.setItem('shiksha-announcements', JSON.stringify(updatedAnnouncements));
+        await saveData(`announcements/${id}`, newAnnouncement);
 
-            toast({
-                title: 'Announcement Sent',
-                description: 'The announcement has been broadcast to all users.',
-            });
-            form.reset();
-             // Trigger a custom event to notify other components like the app shell
-            window.dispatchEvent(new Event('storage'));
-        } catch (error) {
-            console.error('Failed to send announcement:', error);
-            toast({
-                variant: 'destructive',
-                title: 'Failed to Send',
-                description: 'There was a problem sending the announcement.',
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    }, 500);
+        toast({
+            title: 'Announcement Sent',
+            description: 'The announcement has been broadcast to all users.',
+        });
+        form.reset();
+    } catch (error) {
+        console.error('Failed to send announcement:', error);
+        toast({
+            variant: 'destructive',
+            title: 'Failed to Send',
+            description: 'There was a problem sending the announcement.',
+        });
+    } finally {
+        setIsSubmitting(false);
+    }
   }
 
   return (
@@ -112,8 +102,8 @@ export function AnnouncementForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" disabled={isLoading} className="w-full">
-            {isLoading ? (
+          <Button type="submit" disabled={isSubmitting} className="w-full">
+            {isSubmitting ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
               <Send className="mr-2 h-4 w-4" />

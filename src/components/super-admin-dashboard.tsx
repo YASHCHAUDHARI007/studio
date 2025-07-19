@@ -18,27 +18,36 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { initialAllStudentsFeeData, usersData } from "@/lib/data"
 import { Users, User, DollarSign } from 'lucide-react'
+import { useShikshaData } from '@/hooks/use-shiksha-data'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export function SuperAdminDashboard() {
-  const [students, setStudents] = React.useState(usersData.students);
-  const [feeData, setFeeData] = React.useState(initialAllStudentsFeeData);
+  const {data, loading} = useShikshaData();
 
-  React.useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const savedStudents = localStorage.getItem('shiksha-students');
-    if (savedStudents) {
-      setStudents(JSON.parse(savedStudents));
-    }
-    const savedFees = localStorage.getItem('shiksha-fees');
-    if (savedFees) {
-      setFeeData(JSON.parse(savedFees));
-    }
-  }, []);
+  if (loading || !data) {
+    return (
+        <div className="space-y-6">
+            <Skeleton className="h-24 w-full" />
+            <div className="grid gap-4 md:grid-cols-3">
+                <Skeleton className="h-28 w-full" />
+                <Skeleton className="h-28 w-full" />
+                <Skeleton className="h-28 w-full" />
+            </div>
+            <div className="grid gap-6 md:grid-cols-2">
+                <Skeleton className="h-96 w-full" />
+                <Skeleton className="h-96 w-full" />
+            </div>
+        </div>
+    )
+  }
+
+  const students = Object.values(data.students || {});
+  const teachers = Object.values(data.teachers || {});
+  const feeData = data.fees || {};
 
   const totalStudents = students.length;
-  const totalTeachers = usersData.teachers.length;
+  const totalTeachers = teachers.length;
   const totalDues = Object.values(feeData).reduce((acc: number, student: any) => acc + student.summary.due, 0);
 
   const formatCurrency = (amount: number) => {
@@ -106,7 +115,7 @@ export function SuperAdminDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {students.map((student) => (
+                {students.map((student: any) => (
                   <TableRow key={student.id}>
                     <TableCell className="font-mono text-xs text-muted-foreground">{student.id}</TableCell>
                     <TableCell className="font-medium">{student.name}</TableCell>
@@ -134,7 +143,7 @@ export function SuperAdminDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {usersData.teachers.map((teacher) => (
+                {teachers.map((teacher: any) => (
                   <TableRow key={teacher.id}>
                     <TableCell className="font-mono text-xs text-muted-foreground">{teacher.id}</TableCell>
                     <TableCell className="font-medium">{teacher.name}</TableCell>

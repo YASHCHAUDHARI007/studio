@@ -53,10 +53,11 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
-import { initialAllStudentsFeeData, usersData } from "@/lib/data"
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
+import { useShikshaData } from '@/hooks/use-shiksha-data'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const paymentSchema = z.object({
   amount: z.coerce.number().min(1, 'Amount must be greater than 0'),
@@ -66,29 +67,10 @@ const paymentSchema = z.object({
 
 export default function FeesPage() {
   const { toast } = useToast()
+  const { data, loading, saveData } = useShikshaData();
   const [selectedStudentId, setSelectedStudentId] = React.useState<string | null>(null)
   const [isRecordPaymentOpen, setIsRecordPaymentOpen] = React.useState(false);
   
-  const [students, setStudents] = React.useState(() => {
-    if (typeof window === 'undefined') return usersData.students;
-    const saved = localStorage.getItem('shiksha-students');
-    return saved ? JSON.parse(saved) : usersData.students;
-  });
-  
-  const [studentsFeeData, setStudentsFeeData] = React.useState(() => {
-    if (typeof window === 'undefined') return initialAllStudentsFeeData;
-    const saved = localStorage.getItem('shiksha-fees');
-    return saved ? JSON.parse(saved) : initialAllStudentsFeeData;
-  });
-
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('shiksha-fees', JSON.stringify(studentsFeeData));
-    }
-  }, [studentsFeeData]);
-
-  const feeData = selectedStudentId ? studentsFeeData[selectedStudentId as keyof typeof studentsFeeData] : null
-
   const paymentForm = useForm<z.infer<typeof paymentSchema>>({
     resolver: zodResolver(paymentSchema),
     defaultValues: { amount: undefined, date: undefined, notes: '' },
@@ -100,8 +82,19 @@ export default function FeesPage() {
     }
   }, [isRecordPaymentOpen, paymentForm]);
 
+  if (loading || !data) {
+    return <div className='space-y-6'>
+        <Skeleton className='h-48 w-full' />
+        <Skeleton className='h-80 w-full' />
+    </div>
+  }
+  
+  const students = Object.values(data.students);
+  const studentsFeeData = data.fees;
+  const feeData = selectedStudentId ? studentsFeeData[selectedStudentId] : null
 
   const formatCurrency = (amount: number) => {
+    if (typeof amount !== 'number') return 'Rs.0';
     const formattedAmount = new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
@@ -111,40 +104,34 @@ export default function FeesPage() {
     return formattedAmount.replace(/\s/g, '').replace('₹', 'Rs.');
   }
 
-  function handleRecordPayment(data: z.infer<typeof paymentSchema>) {
+  function handleRecordPayment(formData: z.infer<typeof paymentSchema>) {
     if (!selectedStudentId || !feeData) return
 
-    setStudentsFeeData(prevData => {
-      const currentStudentData = prevData[selectedStudentId as keyof typeof prevData]
-      
-      const newPayment = {
-        id: `PAY-${Math.random().toString(36).substring(2, 9)}`,
-        date: format(data.date, 'yyyy-MM-dd'),
-        amount: data.amount,
-        notes: data.notes || 'Installment payment',
-      }
+    const newPayment = {
+      id: `PAY-${Math.random().toString(36).substring(2, 9)}`,
+      date: format(formData.date, 'yyyy-MM-dd'),
+      amount: formData.amount,
+      notes: formData.notes || 'Installment payment',
+    }
 
-      const updatedHistory = [...currentStudentData.paymentHistory, newPayment].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      const totalPaid = updatedHistory.reduce((acc, p) => acc + p.amount, 0)
-      const totalDue = currentStudentData.summary.total - totalPaid
+    const updatedHistory = [...(feeData.paymentHistory || []), newPayment].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    const totalPaid = updatedHistory.reduce((acc, p) => acc + p.amount, 0)
+    const totalDue = feeData.summary.total - totalPaid
 
-      const updatedStudentData = {
-        ...currentStudentData,
+    const path = `fees/${selectedStudentId}`;
+    const updatedStudentFeeData = {
+        ...feeData,
         paymentHistory: updatedHistory,
         summary: {
-          ...currentStudentData.summary,
-          paid: totalPaid,
-          due: totalDue,
+            ...feeData.summary,
+            paid: totalPaid,
+            due: totalDue
         }
-      }
+    };
+    
+    saveData(path, updatedStudentFeeData);
 
-      return {
-        ...prevData,
-        [selectedStudentId]: updatedStudentData,
-      }
-    })
-
-    toast({ title: "Payment Recorded", description: `Recorded a payment of ${formatCurrency(data.amount)} for ${feeData.name}.` })
+    toast({ title: "Payment Recorded", description: `Recorded a payment of ${formatCurrency(formData.amount)} for ${feeData.name}.` })
     setIsRecordPaymentOpen(false)
     paymentForm.reset({ amount: undefined, date: new Date(), notes: '' })
   }
@@ -172,7 +159,7 @@ export default function FeesPage() {
                 <SelectValue placeholder="Select a student..." />
               </SelectTrigger>
               <SelectContent>
-                {students.map((student) => (
+                {students.map((student: any) => (
                   <SelectItem key={student.id} value={student.id}>
                     {student.name} ({student.id})
                   </SelectItem>
@@ -291,8 +278,8 @@ export default function FeesPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {feeData.paymentHistory.length > 0 ? (
-                    feeData.paymentHistory.map((payment) => (
+                  {feeData.paymentHistory && feeData.paymentHistory.length > 0 ? (
+                    feeData.paymentHistory.map((payment: any) => (
                       <TableRow key={payment.id}>
                         <TableCell className="font-medium">{format(new Date(`${payment.date}T00:00:00`), 'dd MMM, yyyy')}</TableCell>
                         <TableCell>{payment.notes}</TableCell>
