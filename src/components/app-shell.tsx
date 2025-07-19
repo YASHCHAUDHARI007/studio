@@ -231,6 +231,10 @@ function MainSidebar() {
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  // The useShikshaData hook is used by AppShell and its children.
+  // We call it here so that the data is loaded for the main app.
+  useShikshaData();
+
   return (
     <SidebarProvider>
         <MainSidebar />

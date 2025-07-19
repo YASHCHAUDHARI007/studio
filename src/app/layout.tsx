@@ -5,7 +5,6 @@ import './globals.css';
 import { AppShell } from '@/components/app-shell';
 import { Toaster } from '@/components/ui/toaster';
 import { usePathname } from 'next/navigation';
-import { useShikshaData } from '@/hooks/use-shiksha-data';
 
 export default function RootLayout({
   children,
@@ -14,11 +13,6 @@ export default function RootLayout({
 }>) {
   const pathname = usePathname();
   const isLoginPage = pathname === '/login';
-
-  // The useShikshaData hook is used by AppShell and its children.
-  // We can call it here so that the data is loaded for the main app.
-  // For the login page, we won't be using it directly in this layout.
-  useShikshaData();
 
   return (
     <html lang="en" suppressHydrationWarning>
