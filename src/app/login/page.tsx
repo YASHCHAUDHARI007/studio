@@ -13,6 +13,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useShikshaData } from '@/hooks/use-shiksha-data'
 import { Skeleton } from '@/components/ui/skeleton'
+import { usersData } from '@/lib/data'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -20,7 +21,11 @@ export default function LoginPage() {
   const [username, setUsername] = React.useState('')
   const [password, setPassword] = React.useState('')
   const [isLoading, setIsLoading] = React.useState(false)
-  const { data, loading } = useShikshaData();
+  const { data: liveData, loading } = useShikshaData();
+
+  // Use static data for test credentials to avoid waiting for live data
+  const testStudents = Object.values(usersData.students);
+  const testTeachers = Object.values(usersData.teachers);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,6 +36,8 @@ export default function LoginPage() {
 
     // Mock authentication
     setTimeout(() => {
+      // Use live data for authentication if available, otherwise it will be null
+      const data = liveData;
       if (!data) {
         toast({ variant: 'destructive', title: 'Error', description: 'Could not connect to the database.' });
         setIsLoading(false);
@@ -70,17 +77,15 @@ export default function LoginPage() {
     }, 1000)
   }
 
-  if(loading || !data) {
+  // Show a simpler skeleton while the app initializes the DB connection
+  if(loading) {
     return (
         <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background p-4">
              <Skeleton className="w-full max-w-sm h-96" />
-             <Skeleton className="w-full max-w-sm h-64" />
         </div>
     )
   }
 
-  const students = Object.values(data.students);
-  const teachers = Object.values(data.teachers);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background p-4">
@@ -142,7 +147,7 @@ export default function LoginPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {students.slice(0, 2).map((student: any) => (
+                    {testStudents.slice(0, 2).map((student: any) => (
                       <TableRow key={student.id}>
                         <TableCell className="font-mono">{student.username}</TableCell>
                         <TableCell className="font-mono">{student.password}</TableCell>
@@ -167,7 +172,7 @@ export default function LoginPage() {
                       <TableCell className="font-mono">superadmin</TableCell>
                       <TableCell className="font-mono">superpassword</TableCell>
                     </TableRow>
-                    {teachers.slice(0, 1).map((teacher: any) => (
+                    {testTeachers.slice(0, 2).map((teacher: any) => (
                       <TableRow key={teacher.id}>
                         <TableCell className="font-mono">{teacher.username}</TableCell>
                         <TableCell className="font-mono">{teacher.password}</TableCell>
